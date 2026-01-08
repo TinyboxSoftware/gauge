@@ -6,11 +6,14 @@ A production-ready system that collects, stores, and visualizes Railway template
 
 ## 🎯 What This System Does
 
-- **Automated Data Collection**: Fetches earnings and template metrics from Railway's GraphQL API every 12 hours
+- **Automated Data Collection**: Fetches earnings and template metrics from Railway's GraphQL API via cron schedule
+- **Self-Contained**: Single script handles env validation, schema setup, API calls, and data persistence
+- **Cost-Efficient**: Runs on Railway cron triggers - pay only for execution time (typically $0/month)
 - **Time-Series Storage**: Stores historical snapshots in PostgreSQL for trend analysis
 - **Advanced Analytics**: Calculates retention rates, growth momentum, revenue per active project, and profitability scores
 - **Grafana Dashboards**: Beautiful, pre-configured dashboards for business intelligence
 - **Health Monitoring**: Alerts for declining templates and revenue risks
+- **Fast Package Management**: Uses UV for lightning-fast dependency installation
 
 ## 📊 Key Metrics Tracked
 
@@ -51,23 +54,23 @@ cd railway-template-metrics
 # Deploy PostgreSQL database
 railway add --database postgresql
 
-# Initialize database schema
-railway run python setup_database.py
-
 # Set environment variables in Railway dashboard:
 # - RAILWAY_API_TOKEN
 # - RAILWAY_CUSTOMER_ID
 # - RAILWAY_WORKSPACE_ID
-# - DATABASE_URL (automatically set by Railway)
+# (DATABASE_URL is automatically set by Railway)
 
-# Deploy the metrics collection service
+# Deploy the service
 railway up
+
+# Set up cron schedule in Railway dashboard:
+# Settings → Cron → Add Schedule: "0 */12 * * *"
 ```
 
 ### 3. Verify It's Working
 
 ```bash
-# Run a test collection
+# Run a test collection (the script handles database setup automatically)
 railway run python collect_metrics.py
 
 # Check the database
@@ -90,18 +93,17 @@ Deploy Grafana from Railway's template marketplace and configure dashboards usin
 
 ```
 railway-template-metrics/
-├── collect_metrics.py      # Main data collection script
-├── setup_database.py       # Database initialization script
-├── test_credentials.py     # Credential testing utility
+├── collect_metrics.py      # All-in-one collection script (validates, creates schema, fetches, persists)
 ├── schema.sql              # PostgreSQL schema definition
-├── requirements.txt        # Python dependencies
-├── Procfile                # Railway deployment config (cron loop)
-├── nixpacks.toml          # Nixpacks build configuration
+├── requirements.txt        # Python dependencies (pip-compatible)
+├── pyproject.toml          # UV package management configuration
+├── Procfile                # Railway deployment config
+├── nixpacks.toml          # Nixpacks build configuration (uses UV)
 ├── .env.example           # Environment variable template
 ├── .gitignore             # Git ignore rules
 ├── README.md              # This file
-├── QUICKSTART.md          # Quick start guide
-├── DEPLOYMENT.md          # Deployment guide
+├── QUICKSTART.md          # Quick start guide (Railway cron setup)
+├── DEPLOYMENT.md          # Detailed deployment guide
 └── DASHBOARD_PLANS.md     # Grafana dashboard documentation
 ```
 

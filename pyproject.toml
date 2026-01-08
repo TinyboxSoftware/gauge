@@ -1,0 +1,30 @@
+[project]
+name = "railway-template-metrics"
+version = "1.0.0"
+description = "Automated metrics collection and analytics for Railway template businesses"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "requests>=2.31.0",
+    "psycopg2-binary>=2.9.9",
+    "python-dateutil>=2.8.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "black>=23.7.0",
+    "ruff>=0.0.285",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.black]
+line-length = 120
+target-version = ['py39']

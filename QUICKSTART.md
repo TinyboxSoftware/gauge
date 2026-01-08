@@ -23,229 +23,252 @@ Get your Railway Template Metrics system up and running in 10 minutes.
 2. Check the URL or workspace settings
 3. Copy the UUID
 
-## Installation Steps
-
-### 1. Clone and Setup
+## Local Testing (Optional)
 
 ```bash
+# Clone repository
 git clone <your-repo>
 cd railway-template-metrics
 
-# Install dependencies locally (for testing)
-pip install -r requirements.txt
-```
+# Install UV (faster than pip)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-### 2. Configure Credentials
+# Install dependencies
+uv pip install -r requirements.txt
 
-```bash
-# Copy the example env file
+# Configure environment variables
 cp .env.example .env
+# Edit .env with your credentials
 
-# Edit .env with your actual values
-nano .env
+# Test the script
+python collect_metrics.py
 ```
 
-Add your credentials:
-```
-RAILWAY_API_TOKEN=your_token_here
-RAILWAY_CUSTOMER_ID=your_customer_uuid
-RAILWAY_WORKSPACE_ID=your_workspace_uuid
-DATABASE_URL=postgresql://localhost:5432/railway_metrics  # For local testing
-```
+## Deploy to Railway
 
-### 3. Test Your Credentials
-
-```bash
-# Load environment variables
-source .env  # On macOS/Linux
-# or
-set -a; source .env; set +a  # Alternative
-
-# Test credentials
-python test_credentials.py
-```
-
-You should see:
-```
-✅ API token valid! Authenticated as: Your Name
-✅ Customer ID valid!
-   Lifetime earnings: $14,085.00
-   Template earnings: $12,500.00
-✅ Workspace ID valid!
-   Found 15 templates
-```
-
-### 4. Deploy to Railway
-
-#### Option A: Using Railway CLI (Recommended)
+### 1. Create Railway Project
 
 ```bash
 # Login to Railway
 railway login
 
-# Create a new project (or link existing)
+# Create new project (or link existing)
 railway init
 
 # Add PostgreSQL database
 railway add --database postgresql
-
-# Set environment variables in Railway dashboard
-# Go to: railway.app → Your Project → Variables
-# Add:
-#   RAILWAY_API_TOKEN
-#   RAILWAY_CUSTOMER_ID
-#   RAILWAY_WORKSPACE_ID
-# (DATABASE_URL is set automatically)
-
-# Initialize database schema
-railway run python setup_database.py
-
-# Test collection
-railway run python collect_metrics.py
-
-# Deploy the service
-railway up
 ```
 
-#### Option B: Using Railway Dashboard
+### 2. Configure Environment Variables
 
-1. Go to [railway.app](https://railway.app)
-2. Create new project
-3. Connect your GitHub repository
-4. Add PostgreSQL database
-5. Add environment variables
-6. Deploy!
+In Railway dashboard (`railway.app → Your Project → Variables`), add:
+
+```
+RAILWAY_API_TOKEN=<your_railway_api_token>
+RAILWAY_CUSTOMER_ID=<your_customer_uuid>
+RAILWAY_WORKSPACE_ID=<your_workspace_uuid>
+```
+
+**Note:** `DATABASE_URL` is automatically set by Railway's PostgreSQL service.
+
+### 3. Set Up Railway Cron Job
+
+The script is designed to run via Railway's **Cron Triggers** for cost efficiency (you only pay for execution time).
+
+**Option A: Using Railway Dashboard (Recommended)**
+
+1. Go to your Railway project
+2. Click on your service
+3. Go to **Settings** → **Cron**
+4. Add a new cron schedule:
+   - **Schedule**: `0 */12 * * *` (every 12 hours)
+   - **Command**: `python collect_metrics.py`
+5. Save
+
+**Option B: Using Railway CLI**
+
+Add to your `railway.json`:
+```json
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "cronSchedule": "0 */12 * * *"
+  }
+}
+```
+
+### 4. Deploy
+
+```bash
+# Deploy to Railway
+railway up
+
+# Or connect to GitHub for automatic deployments
+# Push to your repository and Railway will auto-deploy
+```
 
 ### 5. Verify It's Working
 
 ```bash
-# Check logs
-railway logs --follow
+# Trigger a manual run to test
+railway run python collect_metrics.py
 
-# Query database
-railway run psql
+# Check logs
+railway logs
+
+# Query the database
+railway run psql -c "SELECT COUNT(*) FROM template_snapshots;"
+railway run psql -c "SELECT * FROM latest_earnings;"
 ```
 
-In psql:
-```sql
--- Check earnings data
-SELECT * FROM latest_earnings;
+## Cron Schedule Options
 
--- Check templates
-SELECT template_name, active_projects, total_payout / 100.0 as revenue_usd
+Common cron schedules for metrics collection:
+
+```bash
+0 */6 * * *    # Every 6 hours
+0 */12 * * *   # Every 12 hours (recommended)
+0 0 * * *      # Daily at midnight
+0 0 */2 * *    # Every 2 days
+0 0 * * 0      # Weekly on Sundays
+```
+
+Use [crontab.guru](https://crontab.guru) to create custom schedules.
+
+## What Happens When It Runs
+
+The script automatically:
+
+1. ✅ Validates environment variables
+2. ✅ Checks if database schema exists (creates if needed)
+3. ✅ Validates Railway API credentials
+4. ✅ Fetches earnings & template metrics from Railway
+5. ✅ Persists data to PostgreSQL with calculated metrics
+
+**No manual database setup required!** The script handles everything.
+
+## Monitoring
+
+### View Logs
+
+```bash
+# Real-time logs
+railway logs --follow
+
+# Recent logs
+railway logs --lines 100
+```
+
+### Query Database
+
+```bash
+# Connect to database
+railway run psql
+
+# Or run queries directly
+railway run psql -c "SELECT * FROM top_revenue_templates LIMIT 10;"
+```
+
+### Example Queries
+
+```sql
+-- Latest earnings
+SELECT
+  template_earnings_30d / 100.0 as month_revenue,
+  template_earnings_lifetime / 100.0 as lifetime_revenue,
+  collected_at
+FROM latest_earnings;
+
+-- Top templates
+SELECT
+  template_name,
+  total_payout / 100.0 as revenue_usd,
+  active_projects,
+  retention_rate
 FROM latest_template_metrics
 ORDER BY total_payout DESC
 LIMIT 10;
+
+-- Health alerts
+SELECT * FROM template_health_alerts;
 ```
+
+## Cost Breakdown
+
+**Railway Free Tier:**
+- PostgreSQL: ✅ Free (up to 1 GB)
+- Cron execution: ✅ Free (minimal resources)
+- **Total: $0/month** for most users
+
+**With Grafana:**
+- Add ~$5-10/month if Grafana runs continuously
+- Or use Grafana Cloud free tier
 
 ## Next Steps
 
-### Set Up Cron Schedule
+### Set Up Grafana (Optional)
 
-The service runs continuously with a 12-hour sleep cycle (via Procfile).
+1. Deploy Grafana from Railway marketplace
+2. Add PostgreSQL data source
+3. Import dashboards from `DASHBOARD_PLANS.md`
 
-To change the frequency:
-1. Edit `Procfile`
-2. Change `sleep 43200` to your desired seconds:
-   - 6 hours: `21600`
-   - 12 hours: `43200`
-   - 24 hours: `86400`
+### Advanced Usage
 
-### Deploy Grafana
-
-1. In Railway, add a new service
-2. Search for "Grafana" template
-3. Deploy
-4. Configure PostgreSQL data source:
-   - Host: Your Railway Postgres internal URL
-   - Database: `railway`
-   - User: `postgres`
-   - Password: From `DATABASE_URL`
-   - SSL: Required
-5. Create dashboards using queries from `DASHBOARD_PLANS.md`
-
-### Set Up Alerts (Optional)
-
-In Grafana, configure alerts for:
-- Templates with health < 60
-- Revenue drops > 20% in 7 days
-- Templates with 0 recent projects
+- **Custom frequency**: Adjust cron schedule
+- **Manual runs**: `railway run python collect_metrics.py`
+- **Database backups**: `railway run pg_dump > backup.sql`
+- **Custom queries**: See `schema.sql` for available views
 
 ## Troubleshooting
 
 ### "Missing environment variables"
-- Run `railway variables` to check they're set
-- Verify spelling matches exactly: `RAILWAY_API_TOKEN`, not `RAILWAY_TOKEN`
-
-### "Failed to connect to database"
-- Ensure PostgreSQL service is running
-- Check `DATABASE_URL` is set
-- Verify services are in the same Railway project
-
-### "GraphQL errors"
-- Token expired: Generate new one
-- Wrong IDs: Double-check Customer ID and Workspace ID
-- Test with `python test_credentials.py`
-
-### Collection runs but no data
-- Check logs: `railway logs`
-- Verify database schema: `railway run psql -c "\dt"`
-- Ensure you have templates in your workspace
-
-## Useful Commands
 
 ```bash
-# Test locally (with .env file)
-source .env && python collect_metrics.py
-
-# View Railway logs
-railway logs --follow
-
-# Access database
-railway run psql
-
-# Check service status
-railway status
-
-# Manual collection
-railway run python collect_metrics.py
-
-# Database backup
-railway run pg_dump > backup.sql
-
-# Check database size
-railway run psql -c "SELECT pg_size_pretty(pg_database_size('railway'));"
+railway variables  # Check what's set
+railway variables set RAILWAY_API_TOKEN=your_token
 ```
 
-## Data Collection Timeline
+### "Failed to connect to database"
 
-- **First run**: Collects current snapshot
+- Ensure PostgreSQL service is running
+- Check `DATABASE_URL` is auto-set by Railway
+- Verify services are in same project
+
+### "GraphQL errors"
+
+- Token expired? Generate new one
+- Wrong IDs? Double-check Customer ID and Workspace ID
+- Test locally first: `python collect_metrics.py`
+
+### Cron not triggering
+
+- Check Railway dashboard for cron configuration
+- Verify cron schedule syntax
+- Check service deployment status
+
+## Data Timeline
+
+- **First run**: Collects current snapshot, creates database schema
 - **After 24 hours**: Can calculate 24h growth metrics
-- **After 7 days**: Can calculate weekly trends
-- **After 30 days**: Full analytics available
-
-## Cost Estimate
-
-Railway Free Tier:
-- PostgreSQL: ✅ Free (up to 1 GB)
-- Collection Service: ✅ Free (minimal resources)
-- Grafana: ⚠️ May require paid plan (~512 MB RAM)
-
-**Total: $0-5/month** depending on Grafana usage
+- **After 7 days**: Weekly trend analysis available
+- **After 30 days**: Full profitability scoring and trend analysis
 
 ## Support
 
 - **Railway Platform**: https://railway.app/help
-- **Documentation**: See `DEPLOYMENT.md` and `DASHBOARD_PLANS.md`
+- **Cron Documentation**: https://docs.railway.app/reference/cron-jobs
 - **Database Schema**: See `schema.sql`
+- **Dashboard Setup**: See `DASHBOARD_PLANS.md`
 
-## What's Next?
+---
 
-After 48 hours of data collection:
+**Pro Tips:**
 
-1. **Review Executive Dashboard** - See overall revenue trends
-2. **Analyze Template Performance** - Identify winners and losers
-3. **Check Health Alerts** - Address declining templates
-4. **Make Data-Driven Decisions** - Invest in high-performing categories
+1. Run manually first to verify everything works: `railway run python collect_metrics.py`
+2. Start with 12-hour collection frequency, adjust as needed
+3. Set up Grafana only after you have 48+ hours of data
+4. Use Railway's internal network for database connections (faster, free bandwidth)
 
 Happy analyzing! 📊
