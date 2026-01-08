@@ -1,0 +1,10 @@
+# Nixpacks configuration for Railway deployment
+
+[phases.setup]
+nixPkgs = ["python39", "postgresql"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[start]
+cmd = "python collect_metrics.py"
