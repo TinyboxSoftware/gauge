@@ -3,7 +3,7 @@ name = "railway-template-metrics"
 version = "1.0.0"
 description = "Automated metrics collection and analytics for Railway template businesses"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "requests>=2.31.0",
     "psycopg2-binary>=2.9.9",
@@ -23,8 +23,8 @@ build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 120
-target-version = "py39"
+target-version = "py311"
 
 [tool.black]
 line-length = 120
-target-version = ['py39']
+target-version = ['py311']

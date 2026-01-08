@@ -2,7 +2,7 @@
 # Uses UV for fast, efficient Python package management
 
 [phases.setup]
-nixPkgs = ["python39", "postgresql"]
+nixPkgs = ["python311", "postgresql"]
 
 [phases.install]
 cmds = [
@@ -13,3 +13,7 @@ cmds = [
 
 [start]
 cmd = "python collect_metrics.py"
+
+# Explicitly set Python version
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
