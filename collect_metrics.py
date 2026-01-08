@@ -166,35 +166,7 @@ def validate_railway_credentials(api_token: str, customer_id: str, workspace_id:
         "Content-Type": "application/json"
     }
 
-    # Test 1: Validate API token
-    logger.info("Testing API token...")
-    try:
-        response = requests.post(
-            "https://backboard.railway.com/graphql/internal",
-            json={"query": "query { me { id name email } }"},
-            headers=headers,
-            timeout=10
-        )
-
-        if response.status_code == 401:
-            logger.error("❌ API token is invalid or expired")
-            logger.error("Generate a new token at: https://railway.app/account/tokens")
-            sys.exit(1)
-
-        data = response.json()
-        if "errors" in data:
-            logger.error(f"❌ API error: {data['errors'][0].get('message', 'Unknown')}")
-            sys.exit(1)
-
-        if "data" in data and "me" in data["data"]:
-            user = data["data"]["me"]
-            logger.info(f"✓ API token valid - Authenticated as: {user.get('name', 'Unknown')}")
-
-    except requests.exceptions.RequestException as e:
-        logger.error(f"❌ Network error: {e}")
-        sys.exit(1)
-
-    # Test 2: Validate Customer ID
+    # Test 1: Validate Customer ID
     logger.info(f"Testing Customer ID: {customer_id}...")
     try:
         response = requests.post(
