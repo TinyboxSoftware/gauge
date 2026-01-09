@@ -86,7 +86,9 @@ Deploy Grafana from Railway's template marketplace and configure dashboards usin
 - **[QUICKSTART.md](QUICKSTART.md)** - ⚡ 10-minute setup guide (start here!)
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment guide for Railway
 - **[DASHBOARD_PLANS.md](DASHBOARD_PLANS.md)** - Grafana dashboard configurations and SQL queries
+- **[YTD_TRACKING.md](YTD_TRACKING.md)** - 📊 Year-to-date income tracking and goal management
 - **[schema.sql](schema.sql)** - PostgreSQL database schema with views and functions
+- **[schema_ytd_goals.sql](schema_ytd_goals.sql)** - YTD tracking schema extension
 - **[.env.example](.env.example)** - Required environment variables
 
 ## 🗂️ Project Structure
@@ -94,7 +96,9 @@ Deploy Grafana from Railway's template marketplace and configure dashboards usin
 ```
 railway-template-metrics/
 ├── collect_metrics.py      # All-in-one collection script (validates, creates schema, fetches, persists)
+├── set_goal.py            # YTD goal management script
 ├── schema.sql              # PostgreSQL schema definition
+├── schema_ytd_goals.sql    # YTD tracking schema extension
 ├── requirements.txt        # Python dependencies (pip-compatible)
 ├── pyproject.toml          # UV package management configuration
 ├── Procfile                # Railway deployment config
@@ -104,7 +108,8 @@ railway-template-metrics/
 ├── README.md              # This file
 ├── QUICKSTART.md          # Quick start guide (Railway cron setup)
 ├── DEPLOYMENT.md          # Detailed deployment guide
-└── DASHBOARD_PLANS.md     # Grafana dashboard documentation
+├── DASHBOARD_PLANS.md     # Grafana dashboard documentation
+└── YTD_TRACKING.md        # YTD income tracking guide
 ```
 
 ## 💡 Business Insights You'll Get
@@ -132,6 +137,14 @@ railway-template-metrics/
 - Declining active projects
 - Stagnant templates (zero recent deployments)
 - Revenue drop alerts
+
+### YTD Income Tracker Dashboard
+- Year-to-date earnings vs annual goals
+- Progress percentage and pace status
+- Projected year-end totals
+- Required daily averages to hit targets
+- Monthly breakdown and trends
+- Year-over-year comparisons
 
 ## 🔧 Technical Architecture
 
@@ -174,6 +187,9 @@ After 30 days of data collection, you'll be able to answer:
 - Am I too dependent on a few high-earning templates?
 - Which templates need immediate attention?
 - What's my projected revenue for next month?
+- Am I on track to hit my annual revenue goal?
+- How much do I need to earn per day to reach my target?
+- How does this year compare to last year's performance?
 
 ## 🛠️ Advanced Usage
 
@@ -203,6 +219,26 @@ SELECT * FROM latest_earnings;
 ### Custom Analytics
 
 The database includes pre-built views and a profitability scoring function. See `schema.sql` for details on creating custom queries.
+
+### YTD Goal Tracking
+
+Set and track annual revenue goals:
+
+```bash
+# Apply YTD schema extension (one-time setup)
+railway run psql $DATABASE_URL < schema_ytd_goals.sql
+
+# Set your annual goal
+python set_goal.py --set 50000
+
+# Check your progress
+python set_goal.py --progress
+
+# View all goals
+python set_goal.py --view
+```
+
+See **[YTD_TRACKING.md](YTD_TRACKING.md)** for complete documentation.
 
 ## 🔒 Security
 

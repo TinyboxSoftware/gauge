@@ -609,6 +609,282 @@ Grafana will connect directly to PostgreSQL using the built-in PostgreSQL data s
 
 ---
 
+## Dashboard 5: YTD Income Tracker
+
+**Purpose:** Track year-to-date income progress against annual goals
+**Refresh Rate:** Every 5 minutes
+**Target Audience:** Personal goal tracking, annual planning
+
+### Panels
+
+#### Row 1: YTD Overview
+
+1. **YTD Earnings**
+   - **Type:** Stat panel (large display)
+   - **Query:**
+     ```sql
+     SELECT ytd_earnings_dollars as value
+     FROM ytd_progress
+     ```
+   - **Display:** Large green number with currency format ($14,523.45)
+
+2. **Annual Goal**
+   - **Type:** Stat panel
+   - **Query:**
+     ```sql
+     SELECT goal_dollars as value
+     FROM ytd_progress
+     ```
+   - **Display:** Currency format
+
+3. **Progress to Goal**
+   - **Type:** Gauge
+   - **Query:**
+     ```sql
+     SELECT progress_percentage as value
+     FROM ytd_progress
+     ```
+   - **Thresholds:**
+     - Red: < 50% (behind pace)
+     - Yellow: 50-80% (on pace)
+     - Green: 80-100% (ahead)
+     - Blue: > 100% (exceeded goal)
+   - **Display:** Show percentage with min=0, max=100
+
+4. **Pace Status**
+   - **Type:** Stat panel with color coding
+   - **Query:**
+     ```sql
+     SELECT
+       pace_status as value,
+       CASE pace_status
+         WHEN 'On Track' THEN progress_percentage
+         WHEN 'Behind' THEN progress_percentage
+         ELSE 0
+       END as progress
+     FROM ytd_progress
+     ```
+   - **Display:**
+     - Green: "On Track"
+     - Red: "Behind"
+     - Gray: "No Goal Set"
+
+#### Row 2: Progress Visualization
+
+5. **YTD Progress Bar**
+   - **Type:** Bar gauge (horizontal)
+   - **Query:**
+     ```sql
+     SELECT
+       'Goal Progress' as metric,
+       ytd_earnings_dollars as "Earned",
+       remaining_to_goal_dollars as "Remaining"
+     FROM ytd_progress
+     ```
+   - **Display:** Stacked horizontal bar showing earned (green) vs remaining (gray)
+
+6. **Time vs Progress**
+   - **Type:** Dual stat panel or table
+   - **Query:**
+     ```sql
+     SELECT
+       year_completion_percentage as "Year Completed %",
+       progress_percentage as "Goal Progress %",
+       days_elapsed as "Days Elapsed",
+       days_remaining as "Days Remaining"
+     FROM ytd_progress
+     ```
+   - **Purpose:** Compare time elapsed vs progress made
+
+#### Row 3: Rate Metrics
+
+7. **Average Daily Earnings**
+   - **Type:** Stat panel with sparkline
+   - **Query:**
+     ```sql
+     SELECT
+       avg_daily_earnings_dollars as value
+     FROM ytd_progress
+     ```
+   - **Display:** Currency format ($47.32/day)
+
+8. **Projected Year-End Total**
+   - **Type:** Stat panel
+   - **Query:**
+     ```sql
+     SELECT
+       projected_year_end_dollars as value
+     FROM ytd_progress
+     ```
+   - **Display:** Currency format
+   - **Color:**
+     - Green if >= goal
+     - Yellow if 80-100% of goal
+     - Red if < 80% of goal
+
+9. **Required Daily Average**
+   - **Type:** Stat panel
+   - **Query:**
+     ```sql
+     SELECT
+       required_daily_avg_to_goal_dollars as value
+     FROM ytd_progress
+     WHERE progress_percentage < 100
+     ```
+   - **Display:** Currency format ($52.50/day needed)
+   - **Note:** Shows how much you need to earn daily to hit your goal
+
+#### Row 4: Monthly Breakdown
+
+10. **Monthly Earnings (Current Year)**
+    - **Type:** Bar chart
+    - **Query:**
+      ```sql
+      SELECT
+        month_start as time,
+        monthly_earnings_dollars as "Monthly Earnings"
+      FROM ytd_monthly_breakdown
+      ORDER BY month
+      ```
+    - **Display:** Bar chart with one bar per month
+
+11. **Cumulative YTD by Month**
+    - **Type:** Time series (line + area)
+    - **Query:**
+      ```sql
+      SELECT
+        month_end as time,
+        cumulative_ytd_dollars as "Cumulative YTD"
+      FROM ytd_monthly_breakdown
+      ORDER BY month
+      ```
+    - **Display:** Area chart showing growth over months
+    - **Add goal line:**
+      ```sql
+      SELECT
+        month_end as time,
+        cumulative_ytd_dollars as "Actual YTD",
+        (goal_dollars / 12.0 * month) as "Expected Pace"
+      FROM ytd_monthly_breakdown
+      CROSS JOIN (SELECT goal_dollars FROM ytd_progress) goal
+      ORDER BY month
+      ```
+
+#### Row 5: Detailed Stats Table
+
+12. **YTD Summary Table**
+    - **Type:** Table
+    - **Query:**
+      ```sql
+      SELECT
+        'YTD Earnings' as "Metric",
+        '$' || ROUND(ytd_earnings_dollars, 2)::TEXT as "Value"
+      FROM ytd_progress
+      UNION ALL
+      SELECT 'Annual Goal', '$' || ROUND(goal_dollars, 2)::TEXT
+      FROM ytd_progress
+      UNION ALL
+      SELECT 'Remaining to Goal', '$' || ROUND(remaining_to_goal_dollars, 2)::TEXT
+      FROM ytd_progress
+      WHERE progress_percentage < 100
+      UNION ALL
+      SELECT 'Progress', ROUND(progress_percentage, 1)::TEXT || '%'
+      FROM ytd_progress
+      UNION ALL
+      SELECT 'Days Elapsed', days_elapsed::TEXT
+      FROM ytd_progress
+      UNION ALL
+      SELECT 'Days Remaining', days_remaining::TEXT
+      FROM ytd_progress
+      UNION ALL
+      SELECT 'Avg Daily (YTD)', '$' || ROUND(avg_daily_earnings_dollars, 2)::TEXT
+      FROM ytd_progress
+      UNION ALL
+      SELECT 'Required Daily Avg', '$' || ROUND(required_daily_avg_to_goal_dollars, 2)::TEXT
+      FROM ytd_progress
+      WHERE progress_percentage < 100
+      UNION ALL
+      SELECT 'Projected Year-End', '$' || ROUND(projected_year_end_dollars, 2)::TEXT
+      FROM ytd_progress
+      UNION ALL
+      SELECT 'Pace Status', pace_status
+      FROM ytd_progress
+      ```
+    - **Display:** Two-column table with clean formatting
+
+#### Row 6: Historical View
+
+13. **Year-over-Year Goal Achievement**
+    - **Type:** Table
+    - **Query:**
+      ```sql
+      SELECT
+        year as "Year",
+        '$' || ROUND(actual_earnings_dollars, 2)::TEXT as "Actual Earnings",
+        '$' || ROUND(goal_dollars, 2)::TEXT as "Goal",
+        ROUND(achievement_percentage, 1)::TEXT || '%' as "Achievement %",
+        status as "Status"
+      FROM ytd_goal_history
+      ORDER BY year DESC
+      ```
+    - **Display:** Color-coded status column
+
+14. **YTD Comparison: This Year vs Last Year**
+    - **Type:** Time series (multi-line)
+    - **Query:**
+      ```sql
+      WITH this_year AS (
+        SELECT
+          EXTRACT(DOY FROM date) as day_of_year,
+          earnings_at_end_of_day
+        FROM (
+          SELECT
+            collected_at::date as date,
+            MAX(template_earnings_lifetime) as earnings_at_end_of_day
+          FROM earnings_snapshots
+          WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+          GROUP BY collected_at::date
+        ) t
+      ),
+      last_year AS (
+        SELECT
+          EXTRACT(DOY FROM date) as day_of_year,
+          earnings_at_end_of_day
+        FROM (
+          SELECT
+            collected_at::date as date,
+            MAX(template_earnings_lifetime) as earnings_at_end_of_day
+          FROM earnings_snapshots
+          WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE) - 1
+          GROUP BY collected_at::date
+        ) t
+      ),
+      this_year_normalized AS (
+        SELECT
+          day_of_year,
+          earnings_at_end_of_day - FIRST_VALUE(earnings_at_end_of_day)
+            OVER (ORDER BY day_of_year) as ytd_earnings
+        FROM this_year
+      ),
+      last_year_normalized AS (
+        SELECT
+          day_of_year,
+          earnings_at_end_of_day - FIRST_VALUE(earnings_at_end_of_day)
+            OVER (ORDER BY day_of_year) as ytd_earnings
+        FROM last_year
+      )
+      SELECT
+        ty.day_of_year as "Day of Year",
+        ty.ytd_earnings / 100.0 as "This Year YTD",
+        ly.ytd_earnings / 100.0 as "Last Year YTD"
+      FROM this_year_normalized ty
+      FULL OUTER JOIN last_year_normalized ly ON ty.day_of_year = ly.day_of_year
+      ORDER BY day_of_year
+      ```
+    - **Purpose:** Compare YTD performance year-over-year
+
+---
+
 ## Future Enhancements
 
 1. **Predictive Analytics:**
