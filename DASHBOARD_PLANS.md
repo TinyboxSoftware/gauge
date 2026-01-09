@@ -81,20 +81,54 @@ Grafana will connect directly to PostgreSQL using the built-in PostgreSQL data s
    - **Type:** Bar chart
    - **Query:**
      ```sql
-     WITH daily_deltas AS (
+     WITH daily_latest AS (
        SELECT
          collected_at::date as date,
-         template_earnings_lifetime,
-         template_earnings_lifetime - LAG(template_earnings_lifetime)
-           OVER (ORDER BY collected_at) as daily_change
+         MAX(template_earnings_lifetime) as earnings
        FROM earnings_snapshots
        WHERE collected_at >= NOW() - INTERVAL '30 days'
+       GROUP BY collected_at::date
+     ),
+     daily_deltas AS (
+       SELECT
+         date,
+         earnings,
+         LAG(earnings) OVER (ORDER BY date) as prev_earnings
+       FROM daily_latest
      )
      SELECT
        date as time,
-       daily_change / 100.0 as "Daily Revenue"
+       (earnings - prev_earnings) / 100.0 as "Daily Revenue"
      FROM daily_deltas
-     WHERE daily_change IS NOT NULL
+     WHERE prev_earnings IS NOT NULL
+     ORDER BY date
+     ```
+   - **Note:** This shows daily revenue in dollars. For percentage growth, use:
+     ```sql
+     WITH daily_latest AS (
+       SELECT
+         collected_at::date as date,
+         MAX(template_earnings_lifetime) as earnings
+       FROM earnings_snapshots
+       WHERE collected_at >= NOW() - INTERVAL '30 days'
+       GROUP BY collected_at::date
+     ),
+     daily_deltas AS (
+       SELECT
+         date,
+         earnings,
+         LAG(earnings) OVER (ORDER BY date) as prev_earnings
+       FROM daily_latest
+     )
+     SELECT
+       date as time,
+       CASE
+         WHEN prev_earnings > 0
+         THEN ((earnings - prev_earnings)::float / prev_earnings * 100)
+         ELSE 0
+       END as "Daily Revenue Growth %"
+     FROM daily_deltas
+     WHERE prev_earnings IS NOT NULL
      ORDER BY date
      ```
 
