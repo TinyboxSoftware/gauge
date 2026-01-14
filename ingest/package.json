@@ -1,0 +1,16 @@
+{
+  "name": "ingest",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "pino": "^10.1.1",
+    "zod": "^4.3.5"
+  }
+}
