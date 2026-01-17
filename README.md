@@ -18,18 +18,21 @@ A production-ready system that collects, stores, and visualizes Railway template
 ## 📊 Key Metrics Tracked
 
 ### Revenue Metrics
+
 - Template earnings (lifetime and 30-day)
 - Revenue growth rates (24h, 7d, 30d)
 - Revenue per active project
 - Available balance and withdrawals
 
 ### Template Health
+
 - Active project retention rate
 - Health scores (affects payout percentage)
 - Growth momentum
 - Recent deployment velocity
 
 ### Portfolio Analysis
+
 - Category performance comparison
 - Revenue concentration risk
 - Profitability scores
@@ -40,6 +43,7 @@ A production-ready system that collects, stores, and visualizes Railway template
 ### 1. Prerequisites
 
 Gather these from your Railway account:
+
 - Railway API token ([Get one here](https://railway.app/account/tokens))
 - Your Customer ID (UUID)
 - Your Workspace ID (UUID)
@@ -110,24 +114,28 @@ railway-template-metrics/
 ## 💡 Business Insights You'll Get
 
 ### Executive Summary Dashboard
+
 - Current month revenue and trends
 - Top 5 earning templates
 - Revenue concentration risk analysis
 - Health alerts for at-risk templates
 
 ### Template Performance Dashboard
+
 - Individual template deep-dives
 - Retention and growth metrics
 - Revenue per active project
 - Comparative performance rankings
 
 ### Category Analysis Dashboard
+
 - Revenue by template category
 - Category growth trends
 - Portfolio diversification insights
 - Strategic investment recommendations
 
 ### Alerts Dashboard
+
 - Templates with low health scores (<70)
 - Declining active projects
 - Stagnant templates (zero recent deployments)
@@ -214,6 +222,7 @@ The database includes pre-built views and a profitability scoring function. See 
 ## 💰 Cost
 
 Running on Railway's free tier:
+
 - PostgreSQL: Free tier (512 MB RAM, 1 GB disk)
 - Metrics collector: Minimal resources (~50 MB RAM)
 - Total: **$0/month** for most users
@@ -234,9 +243,9 @@ MIT License - See LICENSE file for details
 
 ## Metrics to collect
 
-### Overall earnings metrics 
+### Overall earnings metrics
 
-This can be done using the GraphQL API with the following query: 
+This can be done using the GraphQL API with the following query:
 
 ```graphql
 query withdrawalData($customerId: String!) {
@@ -278,13 +287,13 @@ fragment WithdrawalAccountInfo on WithdrawalAccount {
 }
 ```
 
-where customer ID is my customer ID. 
+where customer ID is my customer ID.
 
-Here's an example query body: 
+Here's an example query body:
 
-`POST https://backboard.railway.com/graphql/internal` 
+`POST https://backboard.railway.com/graphql/internal`
 
-```json 
+```json
 {
     "query": {}, // ...query above, 
     "variables": {
@@ -300,7 +309,7 @@ Form this, I can get a lot of earning information that would be useful to track 
 
 These metrics will be useful for tracking the performance of each of my templates individually, and making sure that I can make data driven decisions on what works / doesn't work for template categories. What's growing, what isn't growing over time, etc.
 
-You can fetch this with another GraphQL Query: 
+You can fetch this with another GraphQL Query:
 
 ```graphql
 query workspaceTemplates($workspaceId: String!) {
@@ -353,13 +362,13 @@ fragment TemplateMetadataFields on Template {
 }
 ```
 
-where workspaceId is my workspace ID 
+where workspaceId is my workspace ID
 
-Here's an example query body: 
+Here's an example query body:
 
-`POST https://backboard.railway.com/graphql/internal` 
+`POST https://backboard.railway.com/graphql/internal`
 
-```json 
+```json
 {
     "query": {}, // ...query above, 
     "variables": {
@@ -369,17 +378,16 @@ Here's an example query body:
 }
 ```
 
-This returns some info I don't care about but lots I do. Namely: 
+This returns some info I don't care about but lots I do. Namely:
 
 - health: this reports on the health of the project. A low health means reduced payout % from 25% to 15%
-- projects: total number of projects created from this template since it's release 
+- projects: total number of projects created from this template since it's release
 - activeProjects: current number of projects using the services deployed by this template
-- recentProjects: number of projects recently created with this template (good sign of template health / growth curve) 
+- recentProjects: number of projects recently created with this template (good sign of template health / growth curve)
 - totalPayout: the current total commision made from this template via template kickbacks
 
-You can get some great metrics with this data: 
+You can get some great metrics with this data:
 
-- activeProjects / projects: gives you a total percentage of retention 
-- recentProjects / activeProjects: gives you a good relative growth curve; could also compare recentprojects to a previously collected recent projects maybe? 
+- activeProjects / projects: gives you a total percentage of retention
+- recentProjects / activeProjects: gives you a good relative growth curve; could also compare recentprojects to a previously collected recent projects maybe?
 - totalPayout over time lets me track how much my templates are paying out / at what rate they're growing. Measuring this over time will be huge in showing momentum.
-

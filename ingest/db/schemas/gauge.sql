@@ -67,9 +67,9 @@ CREATE TABLE IF NOT EXISTS template_snapshots (
     total_payout BIGINT NOT NULL,          -- Total earnings from this template
 
     -- Calculated metrics (computed during collection)
-    retention_rate NUMERIC(5,2),           -- active_projects / projects * 100
+    retention_rate NUMERIC(10,2),           -- active_projects / projects * 100
     revenue_per_active BIGINT,             -- total_payout / active_projects (if active > 0)
-    growth_momentum NUMERIC(5,2),          -- recent_projects / active_projects * 100 (if active > 0)
+    growth_momentum NUMERIC(10,2),          -- recent_projects / active_projects * 100 (if active > 0)
 
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
