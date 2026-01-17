@@ -1,0 +1,21 @@
+{
+  "name": "ingest",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "test": "bun test",
+    "lint": "bun x biome check ."
+  },
+  "dependencies": {
+    "pino": "^10.1.1",
+    "zod": "^4.3.5"
+  }
+}
