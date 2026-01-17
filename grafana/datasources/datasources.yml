@@ -5,7 +5,7 @@ prune: false
 
 datasources:
   - name: Gauge Database
-    type: PostgreSQL
+    type: postgres
     access: proxy
     orgId: 1
     uid: psql-gauge
@@ -16,6 +16,6 @@ datasources:
     secureJsonData:
       password: $DATABASE_PASSWORD
     jsonData:
-      sslMode: disable
+      sslmode: disable
       connMaxLifetime: 14400
       maxOpenConns: 100
