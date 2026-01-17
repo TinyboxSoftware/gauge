@@ -1,879 +1,745 @@
 {
-	"apiVersion": "dashboard.grafana.app/v2beta1",
-	"kind": "Dashboard",
-	"metadata": {
-		"name": "mydb27f",
-		"generation": 21,
-		"creationTimestamp": "2026-01-08T04:32:36Z",
-		"labels": {},
-		"annotations": {}
+	"annotations": {
+		"list": []
 	},
-	"spec": {
-		"uid": "gauge-exec-summary",
-		"annotations": [
-			{
-				"kind": "AnnotationQuery",
-				"spec": {
-					"builtIn": true,
-					"enable": true,
-					"hide": true,
-					"iconColor": "rgba(0, 211, 255, 1)",
-					"name": "Annotations & Alerts",
-					"query": {
-						"group": "grafana",
-						"kind": "DataQuery",
-						"spec": {},
-						"version": "v0"
-					}
-				}
-			}
-		],
-		"cursorSync": "Off",
-		"description": "summarizes the recurring revenue from all railway templates",
-		"editable": true,
-		"elements": {
-			"panel-1": {
-				"kind": "Panel",
-				"spec": {
-					"data": {
-						"kind": "QueryGroup",
-						"spec": {
-							"queries": [
-								{
-									"kind": "PanelQuery",
-									"spec": {
-										"hidden": false,
-										"query": {
-											"datasource": {
-												"type": "postgres",
-												"uid": "psql-gauge"
-											},
-											"group": "grafana-postgresql-datasource",
-											"kind": "DataQuery",
-											"spec": {
-												"dataset": "railway",
-												"editorMode": "code",
-												"format": "table",
-												"rawQuery": true,
-												"rawSql": "SELECT DISTINCT ON (collected_at::date)\r\n  collected_at::date as time,\r\n  template_earnings_30d / 100.0 as value\r\nFROM earnings_snapshots\r\nORDER BY collected_at::date ASC, collected_at DESC",
-												"sql": {
-													"columns": [
-														{
-															"parameters": [],
-															"type": "function"
-														}
-													],
-													"groupBy": [
-														{
-															"property": {
-																"type": "string"
-															},
-															"type": "groupBy"
-														}
-													],
-													"limit": 50
-												}
-											},
-											"version": "v0"
-										},
-										"refId": "A"
-									}
-								}
-							],
-							"queryOptions": {},
-							"transformations": []
-						}
-					},
-					"description": "",
-					"id": 1,
-					"links": [],
-					"title": "Total Template Earnings 30d (USD)",
-					"vizConfig": {
-						"group": "stat",
-						"kind": "VizConfig",
-						"spec": {
-							"fieldConfig": {
-								"defaults": {
-									"color": {
-										"mode": "thresholds"
-									},
-									"decimals": 2,
-									"fieldMinMax": true,
-									"thresholds": {
-										"mode": "absolute",
-										"steps": [
-											{
-												"color": "yellow",
-												"value": 0
-											},
-											{
-												"color": "green",
-												"value": 2580
-											}
-										]
-									},
-									"unit": "currency:financial:$"
-								},
-								"overrides": []
-							},
-							"options": {
-								"colorMode": "background",
-								"graphMode": "area",
-								"justifyMode": "auto",
-								"orientation": "auto",
-								"percentChangeColorMode": "standard",
-								"reduceOptions": {
-									"calcs": [
-										"lastNotNull"
-									],
-									"fields": "",
-									"values": false
-								},
-								"showPercentChange": true,
-								"text": {},
-								"textMode": "auto",
-								"wideLayout": true
-							}
-						},
-						"version": "12.3.1"
-					}
-				}
+	"description": "summarizes the recurring revenue from all railway templates",
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": null,
+	"links": [],
+	"panels": [
+		{
+			"collapsed": false,
+			"gridPos": {
+				"h": 1,
+				"w": 24,
+				"x": 0,
+				"y": 0
 			},
-			"panel-3": {
-				"kind": "Panel",
-				"spec": {
-					"data": {
-						"kind": "QueryGroup",
-						"spec": {
-							"queries": [
-								{
-									"kind": "PanelQuery",
-									"spec": {
-										"hidden": false,
-										"query": {
-											"datasource": {
-												"type": "postgres",
-												"uid": "psql-gauge"
-											},
-											"group": "grafana-postgresql-datasource",
-											"kind": "DataQuery",
-											"spec": {
-												"dataset": "railway",
-												"editorMode": "code",
-												"format": "table",
-												"rawQuery": true,
-												"rawSql": "-- template_earnings_lifetime / 100.0 as \"Lifetime Earnings\"\r\nSELECT\r\n  collected_at as time,\r\n  template_earnings_30d / 100.0 as \"30-day Earnings\"\r\nFROM earnings_snapshots\r\nWHERE collected_at >= NOW() - INTERVAL '30 days'\r\nORDER BY collected_at",
-												"sql": {
-													"columns": [
-														{
-															"parameters": [],
-															"type": "function"
-														}
-													],
-													"groupBy": [
-														{
-															"property": {
-																"type": "string"
-															},
-															"type": "groupBy"
-														}
-													],
-													"limit": 50
-												}
-											},
-											"version": "v0"
-										},
-										"refId": "A"
-									}
-								}
-							],
-							"queryOptions": {},
-							"transformations": []
-						}
-					},
-					"description": "",
-					"id": 3,
-					"links": [],
-					"title": "Template Earnings Over Time (30 days) USD",
-					"vizConfig": {
-						"group": "timeseries",
-						"kind": "VizConfig",
-						"spec": {
-							"fieldConfig": {
-								"defaults": {
-									"color": {
-										"mode": "palette-classic"
-									},
-									"custom": {
-										"axisBorderShow": false,
-										"axisCenteredZero": false,
-										"axisColorMode": "text",
-										"axisLabel": "",
-										"axisPlacement": "auto",
-										"barAlignment": 0,
-										"barWidthFactor": 0.6,
-										"drawStyle": "line",
-										"fillOpacity": 40,
-										"gradientMode": "opacity",
-										"hideFrom": {
-											"legend": false,
-											"tooltip": false,
-											"viz": false
-										},
-										"insertNulls": false,
-										"lineInterpolation": "smooth",
-										"lineStyle": {
-											"fill": "solid"
-										},
-										"lineWidth": 1,
-										"pointSize": 5,
-										"scaleDistribution": {
-											"type": "linear"
-										},
-										"showPoints": "auto",
-										"showValues": false,
-										"spanNulls": false,
-										"stacking": {
-											"group": "A",
-											"mode": "none"
-										},
-										"thresholdsStyle": {
-											"mode": "dashed"
-										}
-									},
-									"decimals": 2,
-									"thresholds": {
-										"mode": "absolute",
-										"steps": [
-											{
-												"color": "green",
-												"value": 0
-											},
-											{
-												"color": "green",
-												"value": 2580
-											}
-										]
-									},
-									"unit": "currency:financial:$"
-								},
-								"overrides": []
-							},
-							"options": {
-								"legend": {
-									"calcs": [],
-									"displayMode": "list",
-									"placement": "bottom",
-									"showLegend": true
-								},
-								"tooltip": {
-									"hideZeros": false,
-									"mode": "single",
-									"sort": "none"
-								}
-							}
-						},
-						"version": "12.3.1"
-					}
-				}
-			},
-			"panel-4": {
-				"kind": "Panel",
-				"spec": {
-					"data": {
-						"kind": "QueryGroup",
-						"spec": {
-							"queries": [
-								{
-									"kind": "PanelQuery",
-									"spec": {
-										"hidden": false,
-										"query": {
-											"datasource": {
-												"type": "postgres",
-												"uid": "psql-gauge"
-											},
-											"group": "grafana-postgresql-datasource",
-											"kind": "DataQuery",
-											"spec": {
-												"dataset": "railway",
-												"editorMode": "code",
-												"format": "table",
-												"rawQuery": true,
-												"rawSql": "WITH daily_snapshots AS (\r\n  -- Get the last snapshot of each day\r\n  SELECT DISTINCT ON (collected_at::date)\r\n    collected_at::date as date,\r\n    template_earnings_lifetime\r\n  FROM earnings_snapshots\r\n  WHERE collected_at >= NOW() - INTERVAL '30 days'\r\n  ORDER BY collected_at::date, collected_at DESC\r\n),\r\ndaily_deltas AS (\r\n  SELECT\r\n    date,\r\n    template_earnings_lifetime,\r\n    LAG(template_earnings_lifetime) OVER (ORDER BY date) as prev_earnings\r\n  FROM daily_snapshots\r\n)\r\nSELECT\r\n  date as time,\r\n  COALESCE((template_earnings_lifetime - prev_earnings) / 100.0, 0) as \"Daily Revenue\"\r\nFROM daily_deltas\r\nORDER BY date",
-												"sql": {
-													"columns": [
-														{
-															"parameters": [],
-															"type": "function"
-														}
-													],
-													"groupBy": [
-														{
-															"property": {
-																"type": "string"
-															},
-															"type": "groupBy"
-														}
-													],
-													"limit": 50
-												}
-											},
-											"version": "v0"
-										},
-										"refId": "A"
-									}
-								}
-							],
-							"queryOptions": {},
-							"transformations": []
-						}
-					},
-					"description": "Blue line is average at the start of 2026 Green line is goal for end of 2026",
-					"id": 4,
-					"links": [],
-					"title": "Daily Revenue (USD)",
-					"vizConfig": {
-						"group": "barchart",
-						"kind": "VizConfig",
-						"spec": {
-							"fieldConfig": {
-								"defaults": {
-									"color": {
-										"mode": "palette-classic"
-									},
-									"custom": {
-										"axisBorderShow": false,
-										"axisCenteredZero": false,
-										"axisColorMode": "text",
-										"axisLabel": "",
-										"axisPlacement": "auto",
-										"fillOpacity": 80,
-										"gradientMode": "none",
-										"hideFrom": {
-											"legend": false,
-											"tooltip": false,
-											"viz": false
-										},
-										"lineWidth": 1,
-										"scaleDistribution": {
-											"type": "linear"
-										},
-										"thresholdsStyle": {
-											"mode": "dashed"
-										}
-									},
-									"decimals": 2,
-									"fieldMinMax": false,
-									"max": 100,
-									"thresholds": {
-										"mode": "absolute",
-										"steps": [
-											{
-												"color": "orange",
-												"value": 0
-											},
-											{
-												"color": "blue",
-												"value": 65
-											},
-											{
-												"color": "green",
-												"value": 85
-											}
-										]
-									},
-									"unit": "currency:financial:$"
-								},
-								"overrides": []
-							},
-							"options": {
-								"barRadius": 0,
-								"barWidth": 0.97,
-								"fullHighlight": false,
-								"groupWidth": 0.7,
-								"legend": {
-									"calcs": [],
-									"displayMode": "list",
-									"placement": "bottom",
-									"showLegend": false
-								},
-								"orientation": "auto",
-								"showValue": "auto",
-								"stacking": "none",
-								"tooltip": {
-									"hideZeros": false,
-									"mode": "single",
-									"sort": "none"
-								},
-								"xField": "time",
-								"xTickLabelRotation": 0,
-								"xTickLabelSpacing": 0
-							}
-						},
-						"version": "12.3.1"
-					}
-				}
-			},
-			"panel-5": {
-				"kind": "Panel",
-				"spec": {
-					"data": {
-						"kind": "QueryGroup",
-						"spec": {
-							"queries": [
-								{
-									"kind": "PanelQuery",
-									"spec": {
-										"hidden": false,
-										"query": {
-											"datasource": {
-												"type": "postgres",
-												"uid": "psql-gauge"
-											},
-											"group": "grafana-postgresql-datasource",
-											"kind": "DataQuery",
-											"spec": {
-												"dataset": "railway",
-												"editorMode": "code",
-												"format": "table",
-												"rawQuery": true,
-												"rawSql": "SELECT\r\n  template_name as \"Template\",\r\n  category as \"Category\",\r\n  total_payout as \"Total Revenue\",\r\n  active_projects as \"Active Projects\",\r\n  ROUND(retention_rate, 1) || '%' as \"Retention\",\r\n  health as \"Health\"\r\nFROM top_revenue_templates\r\nLIMIT 5",
-												"sql": {
-													"columns": [
-														{
-															"parameters": [],
-															"type": "function"
-														}
-													],
-													"groupBy": [
-														{
-															"property": {
-																"type": "string"
-															},
-															"type": "groupBy"
-														}
-													],
-													"limit": 50
-												}
-											},
-											"version": "v0"
-										},
-										"refId": "A"
-									}
-								}
-							],
-							"queryOptions": {},
-							"transformations": []
-						}
-					},
-					"description": "",
-					"id": 5,
-					"links": [],
-					"title": "Top 5 Revenue-Generating Templates",
-					"vizConfig": {
-						"group": "table",
-						"kind": "VizConfig",
-						"spec": {
-							"fieldConfig": {
-								"defaults": {
-									"color": {
-										"mode": "thresholds"
-									},
-									"custom": {
-										"align": "auto",
-										"cellOptions": {
-											"type": "auto"
-										},
-										"footer": {
-											"reducers": []
-										},
-										"inspect": false
-									},
-									"thresholds": {
-										"mode": "absolute",
-										"steps": [
-											{
-												"color": "green",
-												"value": 0
-											},
-											{
-												"color": "red",
-												"value": 80
-											}
-										]
-									}
-								},
-								"overrides": [
-									{
-										"matcher": {
-											"id": "byName",
-											"options": "Category"
-										},
-										"properties": [
-											{
-												"id": "custom.width",
-												"value": 175
-											}
-										]
-									}
-								]
-							},
-							"options": {
-								"cellHeight": "sm",
-								"showHeader": true
-							}
-						},
-						"version": "12.3.1"
-					}
-				}
-			},
-			"panel-6": {
-				"kind": "Panel",
-				"spec": {
-					"data": {
-						"kind": "QueryGroup",
-						"spec": {
-							"queries": [
-								{
-									"kind": "PanelQuery",
-									"spec": {
-										"hidden": false,
-										"query": {
-											"datasource": {
-												"type": "postgres",
-												"uid": "psql-gauge"
-											},
-											"group": "grafana-postgresql-datasource",
-											"kind": "DataQuery",
-											"spec": {
-												"dataset": "railway",
-												"editorMode": "code",
-												"format": "table",
-												"rawQuery": true,
-												"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n)\r\nSELECT (c.template_earnings_lifetime - y.template_earnings_lifetime) / 100.0 as value\r\nFROM current c, year_start y;\r\n",
-												"sql": {
-													"columns": [
-														{
-															"parameters": [],
-															"type": "function"
-														}
-													],
-													"groupBy": [
-														{
-															"property": {
-																"type": "string"
-															},
-															"type": "groupBy"
-														}
-													],
-													"limit": 50
-												}
-											},
-											"version": "v0"
-										},
-										"refId": "A"
-									}
-								}
-							],
-							"queryOptions": {},
-							"transformations": []
-						}
-					},
-					"description": "",
-					"id": 6,
-					"links": [],
-					"title": "YTD Earnings (USD)",
-					"vizConfig": {
-						"group": "stat",
-						"kind": "VizConfig",
-						"spec": {
-							"fieldConfig": {
-								"defaults": {
-									"color": {
-										"mode": "thresholds"
-									},
-									"decimals": 2,
-									"thresholds": {
-										"mode": "absolute",
-										"steps": [
-											{
-												"color": "green",
-												"value": 0
-											}
-										]
-									},
-									"unit": "currency:financial:$"
-								},
-								"overrides": []
-							},
-							"options": {
-								"colorMode": "value",
-								"graphMode": "area",
-								"justifyMode": "auto",
-								"orientation": "auto",
-								"percentChangeColorMode": "standard",
-								"reduceOptions": {
-									"calcs": [
-										"lastNotNull"
-									],
-									"fields": "",
-									"values": false
-								},
-								"showPercentChange": false,
-								"textMode": "auto",
-								"wideLayout": true
-							}
-						},
-						"version": "12.3.1"
-					}
-				}
-			},
-			"panel-7": {
-				"kind": "Panel",
-				"spec": {
-					"data": {
-						"kind": "QueryGroup",
-						"spec": {
-							"queries": [
-								{
-									"kind": "PanelQuery",
-									"spec": {
-										"hidden": false,
-										"query": {
-											"datasource": {
-												"type": "postgres",
-												"uid": "psql-gauge"
-											},
-											"group": "grafana-postgresql-datasource",
-											"kind": "DataQuery",
-											"spec": {
-												"dataset": "railway",
-												"editorMode": "code",
-												"format": "table",
-												"rawQuery": true,
-												"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n)\r\nSELECT \r\n  (c.template_earnings_lifetime - y.template_earnings_lifetime)::float / \r\n  GREATEST(EXTRACT(EPOCH FROM (c.collected_at - y.collected_at)) / 86400, 1) / 100.0 as value\r\nFROM current c, year_start y;\r\n",
-												"sql": {
-													"columns": [
-														{
-															"parameters": [],
-															"type": "function"
-														}
-													],
-													"groupBy": [
-														{
-															"property": {
-																"type": "string"
-															},
-															"type": "groupBy"
-														}
-													],
-													"limit": 50
-												}
-											},
-											"version": "v0"
-										},
-										"refId": "A"
-									}
-								}
-							],
-							"queryOptions": {},
-							"transformations": []
-						}
-					},
-					"description": "",
-					"id": 7,
-					"links": [],
-					"title": "Average Daily Earnings YTD (USD)",
-					"vizConfig": {
-						"group": "stat",
-						"kind": "VizConfig",
-						"spec": {
-							"fieldConfig": {
-								"defaults": {
-									"color": {
-										"mode": "thresholds"
-									},
-									"decimals": 2,
-									"thresholds": {
-										"mode": "absolute",
-										"steps": [
-											{
-												"color": "green",
-												"value": 0
-											}
-										]
-									},
-									"unit": "currency:financial:$"
-								},
-								"overrides": []
-							},
-							"options": {
-								"colorMode": "value",
-								"graphMode": "area",
-								"justifyMode": "auto",
-								"orientation": "auto",
-								"percentChangeColorMode": "standard",
-								"reduceOptions": {
-									"calcs": [
-										"lastNotNull"
-									],
-									"fields": "",
-									"values": false
-								},
-								"showPercentChange": false,
-								"textMode": "auto",
-								"wideLayout": true
-							}
-						},
-						"version": "12.3.1"
-					}
-				}
-			},
-			"panel-8": {
-				"kind": "Panel",
-				"spec": {
-					"data": {
-						"kind": "QueryGroup",
-						"spec": {
-							"queries": [
-								{
-									"kind": "PanelQuery",
-									"spec": {
-										"hidden": false,
-										"query": {
-											"datasource": {
-												"type": "postgres",
-												"uid": "psql-gauge"
-											},
-											"group": "grafana-postgresql-datasource",
-											"kind": "DataQuery",
-											"spec": {
-												"dataset": "railway",
-												"editorMode": "code",
-												"format": "table",
-												"rawQuery": true,
-												"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n)\r\nSELECT \r\n  (y.template_earnings_lifetime / 100.0) + \r\n  ((c.template_earnings_lifetime - y.template_earnings_lifetime)::float / \r\n   GREATEST(EXTRACT(EPOCH FROM (c.collected_at - y.collected_at)) / 86400, 1) *\r\n   (365 - EXTRACT(DOY FROM y.collected_at)::int)) / 100.0 as value\r\nFROM current c, year_start y;\r\n",
-												"sql": {
-													"columns": [
-														{
-															"parameters": [],
-															"type": "function"
-														}
-													],
-													"groupBy": [
-														{
-															"property": {
-																"type": "string"
-															},
-															"type": "groupBy"
-														}
-													],
-													"limit": 50
-												}
-											},
-											"version": "v0"
-										},
-										"refId": "A"
-									}
-								}
-							],
-							"queryOptions": {},
-							"transformations": []
-						}
-					},
-					"description": "",
-					"id": 8,
-					"links": [],
-					"title": "Projected Year End Revenue (USD)",
-					"vizConfig": {
-						"group": "gauge",
-						"kind": "VizConfig",
-						"spec": {
-							"fieldConfig": {
-								"defaults": {
-									"color": {
-										"mode": "thresholds"
-									},
-									"decimals": 2,
-									"max": 50000,
-									"min": 0,
-									"thresholds": {
-										"mode": "absolute",
-										"steps": [
-											{
-												"color": "dark-red",
-												"value": 0
-											},
-											{
-												"color": "yellow",
-												"value": 25000
-											},
-											{
-												"color": "green",
-												"value": 30900
-											}
-										]
-									},
-									"unit": "currency:financial:$"
-								},
-								"overrides": []
-							},
-							"options": {
-								"minVizHeight": 75,
-								"minVizWidth": 75,
-								"orientation": "auto",
-								"reduceOptions": {
-									"calcs": [
-										"lastNotNull"
-									],
-									"fields": "",
-									"values": false
-								},
-								"showThresholdLabels": false,
-								"showThresholdMarkers": true,
-								"sizing": "auto"
-							}
-						},
-						"version": "12.3.1"
-					}
-				}
-			}
+			"id": 9,
+			"panels": [],
+			"title": "YTD",
+			"type": "row"
 		},
-		"layout": {
-			"kind": "GridLayout",
-			"spec": {
-				"items": []
-			}
-		},
-		"links": [],
-		"liveNow": false,
-		"preload": false,
-		"tags": [
-			"railway-templates"
-		],
-		"timeSettings": {
-			"autoRefresh": "",
-			"autoRefreshIntervals": [
-				"5s",
-				"10s",
-				"30s",
-				"1m",
-				"5m",
-				"15m",
-				"30m",
-				"1h",
-				"2h",
-				"1d"
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"decimals": 2,
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							}
+						]
+					},
+					"unit": "currency:financial:$"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 6,
+				"w": 6,
+				"x": 0,
+				"y": 1
+			},
+			"id": 6,
+			"options": {
+				"colorMode": "value",
+				"graphMode": "area",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"percentChangeColorMode": "standard",
+				"reduceOptions": {
+					"calcs": [
+						"lastNotNull"
+					],
+					"fields": "",
+					"values": false
+				},
+				"showPercentChange": false,
+				"textMode": "auto",
+				"wideLayout": true
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n)\r\nSELECT (c.template_earnings_lifetime - y.template_earnings_lifetime) / 100.0 as value\r\nFROM current c, year_start y;\r\n",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
 			],
-			"fiscalYearStartMonth": 0,
-			"from": "now-30d",
-			"hideTimepicker": false,
-			"timezone": "browser",
-			"to": "now"
+			"title": "YTD Earnings (USD)",
+			"type": "stat"
 		},
-		"title": "Executive Summary",
-		"variables": []
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"decimals": 2,
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							}
+						]
+					},
+					"unit": "currency:financial:$"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 6,
+				"w": 6,
+				"x": 6,
+				"y": 1
+			},
+			"id": 7,
+			"options": {
+				"colorMode": "value",
+				"graphMode": "area",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"percentChangeColorMode": "standard",
+				"reduceOptions": {
+					"calcs": [
+						"lastNotNull"
+					],
+					"fields": "",
+					"values": false
+				},
+				"showPercentChange": false,
+				"textMode": "auto",
+				"wideLayout": true
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n)\r\nSELECT \r\n  (c.template_earnings_lifetime - y.template_earnings_lifetime)::float / \r\n  GREATEST(EXTRACT(EPOCH FROM (c.collected_at - y.collected_at)) / 86400, 1) / 100.0 as value\r\nFROM current c, year_start y;\r\n",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Average Daily Earnings YTD (USD)",
+			"type": "stat"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"decimals": 2,
+					"mappings": [],
+					"max": 50000,
+					"min": 0,
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "dark-red",
+								"value": 0
+							},
+							{
+								"color": "yellow",
+								"value": 25000
+							},
+							{
+								"color": "green",
+								"value": 30900
+							}
+						]
+					},
+					"unit": "currency:financial:$"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 6,
+				"w": 12,
+				"x": 12,
+				"y": 1
+			},
+			"id": 8,
+			"options": {
+				"minVizHeight": 75,
+				"minVizWidth": 75,
+				"orientation": "auto",
+				"reduceOptions": {
+					"calcs": [
+						"lastNotNull"
+					],
+					"fields": "",
+					"values": false
+				},
+				"showThresholdLabels": false,
+				"showThresholdMarkers": true,
+				"sizing": "auto"
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n)\r\nSELECT \r\n  (y.template_earnings_lifetime / 100.0) + \r\n  ((c.template_earnings_lifetime - y.template_earnings_lifetime)::float / \r\n   GREATEST(EXTRACT(EPOCH FROM (c.collected_at - y.collected_at)) / 86400, 1) *\r\n   (365 - EXTRACT(DOY FROM y.collected_at)::int)) / 100.0 as value\r\nFROM current c, year_start y;\r\n",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Projected Year End Revenue (USD)",
+			"type": "gauge"
+		},
+		{
+			"collapsed": false,
+			"gridPos": {
+				"h": 1,
+				"w": 24,
+				"x": 0,
+				"y": 7
+			},
+			"id": 10,
+			"panels": [],
+			"title": "Template Trends",
+			"type": "row"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"decimals": 2,
+					"fieldMinMax": true,
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "yellow",
+								"value": 0
+							},
+							{
+								"color": "green",
+								"value": 2580
+							}
+						]
+					},
+					"unit": "currency:financial:$"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 6,
+				"w": 24,
+				"x": 0,
+				"y": 8
+			},
+			"id": 1,
+			"options": {
+				"colorMode": "background",
+				"graphMode": "area",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"percentChangeColorMode": "standard",
+				"reduceOptions": {
+					"calcs": [
+						"lastNotNull"
+					],
+					"fields": "",
+					"values": false
+				},
+				"showPercentChange": true,
+				"text": {},
+				"textMode": "auto",
+				"wideLayout": true
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT DISTINCT ON (collected_at::date)\r\n  collected_at::date as time,\r\n  template_earnings_30d / 100.0 as value\r\nFROM earnings_snapshots\r\nORDER BY collected_at::date ASC, collected_at DESC",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Total Template Earnings 30d (USD)",
+			"type": "stat"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"axisBorderShow": false,
+						"axisCenteredZero": false,
+						"axisColorMode": "text",
+						"axisLabel": "",
+						"axisPlacement": "auto",
+						"barAlignment": 0,
+						"barWidthFactor": 0.6,
+						"drawStyle": "line",
+						"fillOpacity": 40,
+						"gradientMode": "opacity",
+						"hideFrom": {
+							"legend": false,
+							"tooltip": false,
+							"viz": false
+						},
+						"insertNulls": false,
+						"lineInterpolation": "smooth",
+						"lineStyle": {
+							"fill": "solid"
+						},
+						"lineWidth": 1,
+						"pointSize": 5,
+						"scaleDistribution": {
+							"type": "linear"
+						},
+						"showPoints": "auto",
+						"showValues": false,
+						"spanNulls": false,
+						"stacking": {
+							"group": "A",
+							"mode": "none"
+						},
+						"thresholdsStyle": {
+							"mode": "dashed"
+						}
+					},
+					"decimals": 2,
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "green",
+								"value": 2580
+							}
+						]
+					},
+					"unit": "currency:financial:$"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 0,
+				"y": 14
+			},
+			"id": 3,
+			"options": {
+				"legend": {
+					"calcs": [],
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": {
+					"hideZeros": false,
+					"mode": "single",
+					"sort": "none"
+				}
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "-- template_earnings_lifetime / 100.0 as \"Lifetime Earnings\"\r\nSELECT\r\n  collected_at as time,\r\n  template_earnings_30d / 100.0 as \"30-day Earnings\"\r\nFROM earnings_snapshots\r\nWHERE collected_at >= NOW() - INTERVAL '30 days'\r\nORDER BY collected_at",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Template Earnings Over Time (30 days) USD",
+			"type": "timeseries"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"description": "Blue line is average at the start of 2026 Green line is goal for end of 2026",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"axisBorderShow": false,
+						"axisCenteredZero": false,
+						"axisColorMode": "text",
+						"axisLabel": "",
+						"axisPlacement": "auto",
+						"fillOpacity": 80,
+						"gradientMode": "none",
+						"hideFrom": {
+							"legend": false,
+							"tooltip": false,
+							"viz": false
+						},
+						"lineWidth": 1,
+						"scaleDistribution": {
+							"type": "linear"
+						},
+						"thresholdsStyle": {
+							"mode": "dashed"
+						}
+					},
+					"decimals": 2,
+					"fieldMinMax": false,
+					"mappings": [],
+					"max": 100,
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "orange",
+								"value": 0
+							},
+							{
+								"color": "blue",
+								"value": 65
+							},
+							{
+								"color": "green",
+								"value": 85
+							}
+						]
+					},
+					"unit": "currency:financial:$"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 12,
+				"x": 12,
+				"y": 14
+			},
+			"id": 4,
+			"options": {
+				"barRadius": 0,
+				"barWidth": 0.97,
+				"fullHighlight": false,
+				"groupWidth": 0.7,
+				"legend": {
+					"calcs": [],
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": false
+				},
+				"orientation": "auto",
+				"showValue": "auto",
+				"stacking": "none",
+				"tooltip": {
+					"hideZeros": false,
+					"mode": "single",
+					"sort": "none"
+				},
+				"xField": "time",
+				"xTickLabelRotation": 0,
+				"xTickLabelSpacing": 0
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "WITH daily_snapshots AS (\r\n  -- Get the last snapshot of each day\r\n  SELECT DISTINCT ON (collected_at::date)\r\n    collected_at::date as date,\r\n    template_earnings_lifetime\r\n  FROM earnings_snapshots\r\n  WHERE collected_at >= NOW() - INTERVAL '30 days'\r\n  ORDER BY collected_at::date, collected_at DESC\r\n),\r\ndaily_deltas AS (\r\n  SELECT\r\n    date,\r\n    template_earnings_lifetime,\r\n    LAG(template_earnings_lifetime) OVER (ORDER BY date) as prev_earnings\r\n  FROM daily_snapshots\r\n)\r\nSELECT\r\n  date as time,\r\n  COALESCE((template_earnings_lifetime - prev_earnings) / 100.0, 0) as \"Daily Revenue\"\r\nFROM daily_deltas\r\nORDER BY date",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Daily Revenue (USD)",
+			"type": "barchart"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "auto",
+						"cellOptions": {
+							"type": "auto"
+						},
+						"footer": {
+							"reducers": []
+						},
+						"inspect": false
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Category"
+						},
+						"properties": [
+							{
+								"id": "custom.width",
+								"value": 175
+							}
+						]
+					}
+				]
+			},
+			"gridPos": {
+				"h": 8,
+				"w": 24,
+				"x": 0,
+				"y": 22
+			},
+			"id": 5,
+			"options": {
+				"cellHeight": "sm",
+				"showHeader": true
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT\r\n  template_name as \"Template\",\r\n  category as \"Category\",\r\n  total_payout as \"Total Revenue\",\r\n  active_projects as \"Active Projects\",\r\n  ROUND(retention_rate, 1) || '%' as \"Retention\",\r\n  health as \"Health\"\r\nFROM top_revenue_templates\r\nLIMIT 5",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Top 5 Revenue-Generating Templates",
+			"type": "table"
+		}
+	],
+	"preload": false,
+	"schemaVersion": 42,
+	"tags": [
+		"railway-templates"
+	],
+	"templating": {
+		"list": []
 	},
-	"status": {}
+	"time": {
+		"from": "now-30d",
+		"to": "now"
+	},
+	"timepicker": {},
+	"timezone": "browser",
+	"title": "Executive Summary",
+	"uid": "gauge-exec-summary",
+	"version": 1
 }
