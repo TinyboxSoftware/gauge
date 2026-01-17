@@ -1,393 +1,105 @@
-# Railway Template Metrics System
+# Deploy and Host Gauge on Railway
 
-**Automated metrics collection and analytics for Railway template businesses.**
+A complete metrics and analytics stack for Railway Template creators. featuring automated data collection, PostgreSQL persistence, and pre-configured Grafana dashboards to track revenue, health, and growth.
 
-A production-ready system that collects, stores, and visualizes Railway template performance metrics to help you make data-driven business decisions. Track revenue trends, identify high-performing templates, monitor health alerts, and optimize your template portfolio.
+## About Hosting Gauge
 
-## 🎯 What This System Does
+Hosting Gauge involves deploying a three-tier observability stack specifically designed for Railway template businesses:
 
-- **Automated Data Collection**: Fetches earnings and template metrics from Railway's GraphQL API via cron schedule
-- **Self-Contained**: Single script handles env validation, schema setup, API calls, and data persistence
-- **Cost-Efficient**: Runs on Railway cron triggers - pay only for execution time (typically $0/month)
-- **Time-Series Storage**: Stores historical snapshots in PostgreSQL for trend analysis
-- **Advanced Analytics**: Calculates retention rates, growth momentum, revenue per active project, and profitability scores
-- **Grafana Dashboards**: Beautiful, pre-configured dashboards for business intelligence
-- **Health Monitoring**: Alerts for declining templates and revenue risks
-- **Fast Package Management**: Uses UV for lightning-fast dependency installation
+- a Bun-powered ingest service that interacts with the Railway GraphQL API and runs via a CRON service.
+- a PostgreSQL database for historical snapshot storage
+- a provisioned Grafana instance for professional-grade visualization.
 
-## 📊 Key Metrics Tracked
+The system automatically handles time-series growth calculations (24h, 7d, 30d) and provides deep insights into template retention and revenue momentum outside of Railway's current metrics.
 
-### Revenue Metrics
+## Common Use Cases
 
-- Template earnings (lifetime and 30-day)
-- Revenue growth rates (24h, 7d, 30d)
-- Revenue per active project
-- Available balance and withdrawals
+- **Revenue Performance Tracking:** Monitor lifetime and 30-day earnings across your entire template portfolio.
+- **Template Health Monitoring:** Keep track of health scores to ensure you maintain maximum payout percentages (25%).
+- **Retention Analysis:** Compare active projects against total deployments to calculate real-world retention rates.
+- **Growth Rate Benchmarking:** Identify high-momentum templates using 24-hour, 7-day, and 30-day revenue growth trends.
+- **Portfolio Risk Management:** Visualize revenue concentration to understand which templates drive your business.
 
-### Template Health
+## Dependencies for Gauge Hosting
 
-- Active project retention rate
-- Health scores (affects payout percentage)
-- Growth momentum
-- Recent deployment velocity
+- **Railway Volumes:** For persistent PostgreSQL storage of historical metrics.
+- **Docker Images:** Pre-configured environments for Bun (Ingest Service) and Grafana (Visualization).
 
-### Portfolio Analysis
+## Deployment Dependencies
 
-- Category performance comparison
-- Revenue concentration risk
-- Profitability scores
-- Template rankings
+- **Railway API Token:** Required to fetch metrics from your account; should be an account level token.
+- **Railway Customer & Workspace IDs:** For targeted API queries.
+- **Grafana Documentation:** For advanced dashboard customization.
+- **Railway GraphQL API:** The source of truth for all ingested data.
 
-## 🚀 Quick Start
+## Implementation Details
 
-### 1. Prerequisites
+### Quick Start Guide
 
-Gather these from your Railway account:
+1. Click **"Deploy on Railway"** and provide your Railway API credentials in the environment variables.
+2. Set your desired Grafana admin username.
+3. Wait 3-5 minutes for the services to initialize.
+4. Manually run the CRON service once to load some data in OR wait 12 hours.
+5. Access your **Executive Summary** dashboard via the provided Grafana URL to see your data live.
 
-- Railway API token ([Get one here](https://railway.app/account/tokens))
-- Your Customer ID (UUID)
-- Your Workspace ID (UUID)
+### Environment Variables
 
-### 2. Deploy to Railway
+#### Ingest Service (Bun)
 
-```bash
-# Clone this repository
-git clone <your-repo-url>
-cd railway-template-metrics
+These variables control the collection and processing of Railway API data.
 
-# Deploy PostgreSQL database
-railway add --database postgresql
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `RAILWAY_API_TOKEN` | Your Railway personal API token | **Required** |
+| `RAILWAY_CUSTOMER_ID` | Your Railway Customer UUID | **Required** |
+| `RAILWAY_WORKSPACE_ID` | Your Railway Workspace UUID | **Required** |
+| `DATABASE_URL` | PostgreSQL connection string | *Provided by Railway* |
 
-# Set environment variables in Railway dashboard:
-# - RAILWAY_API_TOKEN
-# - RAILWAY_CUSTOMER_ID
-# - RAILWAY_WORKSPACE_ID
-# (DATABASE_URL is automatically set by Railway)
-
-# Deploy the service
-railway up
-
-# Set up cron schedule in Railway dashboard:
-# Settings → Cron → Add Schedule: "0 */12 * * *"
-```
-
-### 3. Verify It's Working
-
-```bash
-# Run a test collection (the script handles database setup automatically)
-railway run python collect_metrics.py
-
-# Check the database
-railway run psql -c "SELECT COUNT(*) FROM template_snapshots;"
-```
-
-### 4. Set Up Grafana (Optional)
-
-Deploy Grafana from Railway's template marketplace and configure dashboards using the queries in `DASHBOARD_PLANS.md`.
-
-## 📚 Documentation
-
-- **[QUICKSTART.md](QUICKSTART.md)** - ⚡ 10-minute setup guide (start here!)
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment guide for Railway
-- **[DASHBOARD_PLANS.md](DASHBOARD_PLANS.md)** - Grafana dashboard configurations and SQL queries
-- **[schema.sql](schema.sql)** - PostgreSQL database schema with views and functions
-- **[.env.example](.env.example)** - Required environment variables
-
-## 🗂️ Project Structure
+#### Grafana (Visualization)
 
-```
-railway-template-metrics/
-├── collect_metrics.py      # All-in-one collection script (validates, creates schema, fetches, persists)
-├── schema.sql              # PostgreSQL schema definition
-├── requirements.txt        # Python dependencies (pip-compatible)
-├── pyproject.toml          # UV package management configuration
-├── Procfile                # Railway deployment config
-├── nixpacks.toml          # Nixpacks build configuration (uses UV)
-├── .env.example           # Environment variable template
-├── .gitignore             # Git ignore rules
-├── README.md              # This file
-├── QUICKSTART.md          # Quick start guide (Railway cron setup)
-├── DEPLOYMENT.md          # Detailed deployment guide
-└── DASHBOARD_PLANS.md     # Grafana dashboard documentation
-```
-
-## 💡 Business Insights You'll Get
-
-### Executive Summary Dashboard
-
-- Current month revenue and trends
-- Top 5 earning templates
-- Revenue concentration risk analysis
-- Health alerts for at-risk templates
-
-### Template Performance Dashboard
-
-- Individual template deep-dives
-- Retention and growth metrics
-- Revenue per active project
-- Comparative performance rankings
-
-### Category Analysis Dashboard
-
-- Revenue by template category
-- Category growth trends
-- Portfolio diversification insights
-- Strategic investment recommendations
-
-### Alerts Dashboard
-
-- Templates with low health scores (<70)
-- Declining active projects
-- Stagnant templates (zero recent deployments)
-- Revenue drop alerts
+These variables configure the Grafana instance and its connection to the database.
 
-## 🔧 Technical Architecture
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `VERSION` | Grafana version to deploy (from `grafana/dockerfile`) | `latest` default |
+| `GF_SECURITY_ADMIN_USER` | Grafana admin username | `admin` |
+| `DATABASE_HOST` | Database internal hostname | `${{Postgres.RAILWAY_INTERNAL_HOST}}` |
+| `DATABASE_PORT` | Database internal port | `${{Postgres.PORT}}` |
+| `DATABASE_USER` | Database username | `${{Postgres.POSTGRES_USER}}` |
+| `DATABASE_PASSWORD` | Database password | `${{Postgres.POSTGRES_PASSWORD}}` |
+| `DATABASE_NAME` | Database name | `${{Postgres.POSTGRES_DB}}` |
 
-```
-┌─────────────────────┐
-│  Railway GraphQL API│
-└──────────┬──────────┘
-           │ Every 12 hours
-           ▼
-┌─────────────────────┐
-│ Python Collection   │
-│ Script (Cron)       │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  PostgreSQL DB      │
-│  - earnings_snapshots
-│  - template_snapshots
-│  - derived_metrics  │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Grafana Dashboards │
-│  - Executive view   │
-│  - Template analysis│
-│  - Category insights│
-└─────────────────────┘
-```
-
-## 📈 Sample Insights
-
-After 30 days of data collection, you'll be able to answer:
-
-- Which templates generate the most revenue?
-- Which templates have the best retention rates?
-- Are my templates growing or declining?
-- Which category should I invest in next?
-- Am I too dependent on a few high-earning templates?
-- Which templates need immediate attention?
-- What's my projected revenue for next month?
-
-## 🛠️ Advanced Usage
-
-### Manual Data Collection
-
-```bash
-python collect_metrics.py
-```
-
-### Query the Database
-
-```bash
-railway run psql
-```
-
-```sql
--- Top earning templates
-SELECT * FROM top_revenue_templates LIMIT 10;
-
--- Templates needing attention
-SELECT * FROM template_health_alerts;
-
--- Latest earnings summary
-SELECT * FROM latest_earnings;
-```
-
-### Custom Analytics
-
-The database includes pre-built views and a profitability scoring function. See `schema.sql` for details on creating custom queries.
-
-## 🔒 Security
-
-- All API tokens are stored as environment variables
-- Database connections use SSL
-- No sensitive data is committed to git
-- Follow the security best practices in `DEPLOYMENT.md`
-
-## 💰 Cost
-
-Running on Railway's free tier:
-
-- PostgreSQL: Free tier (512 MB RAM, 1 GB disk)
-- Metrics collector: Minimal resources (~50 MB RAM)
-- Total: **$0/month** for most users
-
-See `DEPLOYMENT.md` for scaling recommendations if you exceed free tier limits.
-
-## 🤝 Contributing
-
-This is a personal business intelligence tool, but feel free to fork and adapt for your own use case.
-
-## 📝 License
-
-MIT License - See LICENSE file for details
-
----
-
-## Original API Documentation
-
-## Metrics to collect
-
-### Overall earnings metrics
-
-This can be done using the GraphQL API with the following query:
-
-```graphql
-query withdrawalData($customerId: String!) {
-  earningDetails(customerId: $customerId) {
-    ...EarningDetails
-  }
-  withdrawalAccountsV2(customerId: $customerId) {
-    ...WithdrawalAccountInfo
-  }
-  hasRecentWithdrawal(customerId: $customerId)
-}
-
-fragment EarningDetails on EarningDetails {
-  lifetimeEarnings
-  referralEarningsLifetime
-  referralEarnings30d
-  templateEarningsLifetime
-  templateEarnings30d
-  bountyEarningsLifetime
-  bountyEarnings30d
-  threadEarningsLifetime
-  threadEarnings30d
-  availableBalance
-  lifetimeCashWithdrawals
-  lifetimeCreditWithdrawals
-}
-
-fragment WithdrawalAccountInfo on WithdrawalAccount {
-  id
-  platform
-  platformDetails
-  customerId
-  stripeConnectInfo {
-    hasOnboarded
-    needsAttention
-    bankLast4
-    cardLast4
-  }
-}
-```
-
-where customer ID is my customer ID.
-
-Here's an example query body:
-
-`POST https://backboard.railway.com/graphql/internal`
-
-```json
-{
-    "query": {}, // ...query above, 
-    "variables": {
-        "customerId" "my-uuid"
-    },
-    "operationName": "withdrawlData"
-}
-```
-
-Form this, I can get a lot of earning information that would be useful to track over time. All cash values are stored as integers where the last to places replresent the decimal. For example the number `1408500` represents $14,085.00`
-
-### Individual Template Metrics
-
-These metrics will be useful for tracking the performance of each of my templates individually, and making sure that I can make data driven decisions on what works / doesn't work for template categories. What's growing, what isn't growing over time, etc.
-
-You can fetch this with another GraphQL Query:
-
-```graphql
-query workspaceTemplates($workspaceId: String!) {
-  workspaceTemplates(workspaceId: $workspaceId) {
-    edges {
-      node {
-        ...UserTemplateFields
-      }
-    }
-  }
-}
-
-fragment UserTemplateFields on Template {
-  ...TemplateFields
-  activeProjects
-  totalPayout
-}
-
-fragment TemplateFields on Template {
-  ...TemplateMetadataFields
-  id
-  code
-  createdAt
-  demoProjectId
-  workspaceId
-  serializedConfig
-  canvasConfig
-  status
-  isApproved
-  isVerified
-  communityThreadSlug
-  isV2Template
-  health
-  projects
-  recentProjects
-}
-
-fragment TemplateMetadataFields on Template {
-  name
-  description
-  image
-  category
-  readme
-  tags
-  languages
-  guides {
-    post
-    video
-  }
-}
-```
-
-where workspaceId is my workspace ID
-
-Here's an example query body:
-
-`POST https://backboard.railway.com/graphql/internal`
-
-```json
-{
-    "query": {}, // ...query above, 
-    "variables": {
-        "workspaceId" "my-workspace-uuid"
-    },
-    "operationName": "workspaceTemplates"
-}
-```
-
-This returns some info I don't care about but lots I do. Namely:
-
-- health: this reports on the health of the project. A low health means reduced payout % from 25% to 15%
-- projects: total number of projects created from this template since it's release
-- activeProjects: current number of projects using the services deployed by this template
-- recentProjects: number of projects recently created with this template (good sign of template health / growth curve)
-- totalPayout: the current total commision made from this template via template kickbacks
-
-You can get some great metrics with this data:
-
-- activeProjects / projects: gives you a total percentage of retention
-- recentProjects / activeProjects: gives you a good relative growth curve; could also compare recentprojects to a previously collected recent projects maybe?
-- totalPayout over time lets me track how much my templates are paying out / at what rate they're growing. Measuring this over time will be huge in showing momentum.
+### Internal Service URLs
+
+The stack components communicate internally using these Railway's internal networking
+
+### Version Control
+
+Each service is pinned to stable versions for production reliability:
+
+- **Bun (Ingest):** `latest` (Alpine)
+- **PostgreSQL:** Railway's latest supported version (16+)
+- **Grafana:** `12.3.1` (Configurable via `VERSION` environment variable)
+
+### Connecting Applications
+
+**For Ingest:** The `ingest` service runs as a scheduled worker (Cron) within the stack. It is pre-configured to connect to the internal PostgreSQL instance using the `DATABASE_URL`.
+
+**For Visualization:** Grafana is auto-provisioned with a datasource named `psql-gauge` pointing to the internal database. No manual setup is required to see your metrics.
+
+**For Data Export:** You can connect external BI tools to the PostgreSQL instance as needed- that data is yours even if you don't want to use Grafana to visualize it.
+
+## Customizing Your Stack
+
+To customize dashboards or collection logic:
+
+1. **Fork the GitHub repository.**
+2. Modify the ingest logic in `ingest/index.ts`
+3. Update dashboard JSON templates in `grafana/dashboards/templates/` to add custom visualizations.
+4. Commit, relink the repo, and push; Railway will automatically redeploy the updated services.
+
+## Why Deploy Gauge on Railway?
+
+Railway is the premier platform for hosting infrastructure. By deploying Gauge on Railway, you get a self-healing, vertically-scaling observability stack that monitors your Railway business from *within* Railway.
+
+Leverage the same platform that hosts your templates to analyze their success, ensuring minimal latency and maximum security for your business data.
