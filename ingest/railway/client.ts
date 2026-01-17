@@ -47,13 +47,14 @@ export class RailwayClient {
   }
 
   /**
-   * Execute a GraphQL query against Railway's API
+   * Execute a GraphQL query against Railway's API with retries
    */
   private async executeQuery<T>(
     query: string,
     variables: Record<string, unknown>,
     operationName: string,
     validator: (data: unknown) => T,
+    maxRetries = 3,
   ): Promise<T> {
     const payload = {
       query,
@@ -61,56 +62,75 @@ export class RailwayClient {
       operationName,
     };
 
-    this.logger?.debug({ operationName, variables }, 'Executing Railway GraphQL query');
-
-    try {
-      const response = await fetch(this.endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new RailwayAPIError(
-          `HTTP ${response.status}: ${response.statusText}`,
+    let lastError: Error | undefined;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        this.logger?.debug(
+          { operationName, variables, attempt }, 
+          'Executing Railway GraphQL query'
         );
+
+        const response = await fetch(this.endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.apiToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          // Don't retry on 401/403/404
+          if ([401, 403, 404].includes(response.status)) {
+            throw new RailwayAPIError(
+              `HTTP ${response.status}: ${response.statusText}`,
+            );
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const rawData = await response.json() as {
+          data?: unknown;
+          errors?: Array<{ message: string }>;
+        };
+
+        // Check for GraphQL errors
+        if (rawData.errors) {
+          const errorMessages = rawData.errors.map((e) => e.message).join(', ');
+          throw new RailwayAPIError(
+            `GraphQL errors: ${errorMessages}`,
+            rawData.errors,
+          );
+        }
+
+        // Validate the response data
+        const validated = validator(rawData.data);
+
+        this.logger?.debug({ operationName }, 'Successfully validated Railway API response');
+
+        return validated;
+
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        if (error instanceof RailwayAPIError) {
+          throw error; // Don't retry validated GraphQL or Auth errors
+        }
+
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000;
+          this.logger?.warn(
+            { error: lastError.message, attempt, nextRetryIn: `${delay}ms` },
+            'Railway API request failed, retrying...'
+          );
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
-
-      const rawData = await response.json() as {
-        data?: unknown;
-        errors?: Array<{ message: string }>;
-      };
-
-      // Check for GraphQL errors
-      if (rawData.errors) {
-        const errorMessages = rawData.errors.map((e) => e.message).join(', ');
-        throw new RailwayAPIError(
-          `GraphQL errors: ${errorMessages}`,
-          rawData.errors,
-        );
-      }
-
-      // Validate the response data
-      const validated = validator(rawData.data);
-
-      this.logger?.debug({ operationName }, 'Successfully validated Railway API response');
-
-      return validated;
-
-    } catch (error) {
-      if (error instanceof RailwayAPIError) {
-        throw error;
-      }
-
-      this.logger?.error({ error, operationName }, 'Railway API request failed');
-
-      throw new RailwayAPIError(
-        `Failed to execute ${operationName}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
     }
+
+    this.logger?.error({ error: lastError?.message, operationName }, 'Railway API request failed after all attempts');
+    throw lastError;
   }
 
   /**
