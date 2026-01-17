@@ -11,11 +11,11 @@ datasources:
     uid: psql-gauge
     isDefault: true
     url: $DATABASE_HOST:$DATABASE_PORT
-    database: $DATABASE_NAME
     user: $DATABASE_USER
     secureJsonData:
       password: $DATABASE_PASSWORD
     jsonData:
+      database: $DATABASE_NAME
       sslmode: disable
       connMaxLifetime: 14400
       maxOpenConns: 100
