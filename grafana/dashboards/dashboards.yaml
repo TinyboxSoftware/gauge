@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "Gauge: Railway Template Metrics"
+    orgId: 1
+    folder: "Railway Template Metrics"
+    type: file
+    disableDeletion: false # Set to true to prevent deletion from UI
+    editable: true # Set to false to prevent editing from UI
+    options:
+      path: /etc/grafana/dashboards # Path to your JSON files

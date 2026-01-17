@@ -16,5 +16,22 @@ services:
       timeout: 5s
       retries: 5
 
+  grafana:
+    build: ./grafana
+    container_name: gauge-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - DATABASE_HOST=gauge-postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=gauge
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
