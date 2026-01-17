@@ -840,10 +840,7 @@
 		"list": [
 			{
 				"allowCustomValue": false,
-				"current": {
-					"text": "Plausible Analytics",
-					"value": "6d371192-9eec-48dc-a9a9-19ad01c883de"
-				},
+				"current": {},
 				"datasource": {
 					"type": "postgres",
 					"uid": "psql-gauge"
