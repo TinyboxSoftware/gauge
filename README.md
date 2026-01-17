@@ -36,11 +36,24 @@ The system automatically handles time-series growth calculations (24h, 7d, 30d) 
 
 ### Quick Start Guide
 
-1. Click **"Deploy on Railway"** and provide your Railway API credentials in the environment variables.
+#### Deploying Services 
+
+1. Click **"Deploy on Railway"** and provide your Railway API credentials, Customer ID, and Workspace ID in the environment variables.
 2. Set your desired Grafana admin username.
-3. Wait 3-5 minutes for the services to initialize.
-4. Manually run the CRON service once to load some data in OR wait 12 hours.
-5. Access your **Executive Summary** dashboard via the provided Grafana URL to see your data live.
+3. Wait 2-3 minutes for the services to initialize.
+
+#### Configure Ingest CRON Service
+
+1. Manually configure the ingest service's schedule by going to settings -> Cron Schedule -> Add Schedule
+2. I would suggest starting with `0 0,12 * * *` which would be every 12 hours in UTC time 
+3. From now on, your ingest will run on a schedule and pull in your Railway Template metrics
+
+#### Access your dashboards via Grafana
+
+1. Grab the automatically generated domain from the Grafana service.
+2. Grab your generated password from the Grafna Service -> Variables -> `GF_SECURITY_ADMIN_PASSWORD` and copy it. 
+7. Access your **Executive Summary** dashboard via the generated domain and username/password.
+8. OPTIONAL: add a custom domain to your Grafana service so it's easier to remember. 
 
 ### Environment Variables
 
