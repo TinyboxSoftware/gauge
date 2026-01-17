@@ -1,0 +1,897 @@
+{
+	"annotations": {
+		"list": [
+			{
+				"builtIn": 1,
+				"datasource": {
+					"type": "grafana",
+					"uid": "-- Grafana --"
+				},
+				"enable": true,
+				"hide": true,
+				"iconColor": "rgba(0, 211, 255, 1)",
+				"name": "Annotations & Alerts",
+				"type": "dashboard"
+			}
+		]
+	},
+	"description": "drilldown into the statistics for a specific railway template",
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": 0,
+	"links": [],
+	"panels": [
+		{
+			"collapsed": false,
+			"gridPos": {
+				"h": 1,
+				"w": 24,
+				"x": 0,
+				"y": 0
+			},
+			"id": 7,
+			"panels": [],
+			"title": "Template Revenue & Retention",
+			"type": "row"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"axisBorderShow": false,
+						"axisCenteredZero": false,
+						"axisColorMode": "text",
+						"axisLabel": "",
+						"axisPlacement": "auto",
+						"barAlignment": 0,
+						"barWidthFactor": 0.6,
+						"drawStyle": "line",
+						"fillOpacity": 40,
+						"gradientMode": "opacity",
+						"hideFrom": {
+							"legend": false,
+							"tooltip": false,
+							"viz": false
+						},
+						"insertNulls": false,
+						"lineInterpolation": "smooth",
+						"lineStyle": {
+							"fill": "solid"
+						},
+						"lineWidth": 1,
+						"pointSize": 5,
+						"scaleDistribution": {
+							"type": "linear"
+						},
+						"showPoints": "auto",
+						"showValues": false,
+						"spanNulls": false,
+						"stacking": {
+							"group": "A",
+							"mode": "none"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						}
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					},
+					"unit": "currency:financial:$"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 9,
+				"w": 8,
+				"x": 0,
+				"y": 1
+			},
+			"id": 1,
+			"options": {
+				"legend": {
+					"calcs": [],
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": {
+					"hideZeros": false,
+					"mode": "single",
+					"sort": "none"
+				}
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT\r\n  collected_at as time,\r\n  total_payout as \"Total Revenue\"\r\nFROM template_snapshots\r\nWHERE template_id = '$template'\r\n  AND collected_at >= NOW() - INTERVAL '90 days'\r\nORDER BY collected_at",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Template Revenue Trend",
+			"type": "timeseries"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"axisBorderShow": false,
+						"axisCenteredZero": false,
+						"axisColorMode": "text",
+						"axisLabel": "",
+						"axisPlacement": "auto",
+						"barAlignment": 0,
+						"barWidthFactor": 0.6,
+						"drawStyle": "line",
+						"fillOpacity": 40,
+						"gradientMode": "opacity",
+						"hideFrom": {
+							"legend": false,
+							"tooltip": false,
+							"viz": false
+						},
+						"insertNulls": false,
+						"lineInterpolation": "linear",
+						"lineWidth": 1,
+						"pointSize": 5,
+						"scaleDistribution": {
+							"type": "linear"
+						},
+						"showPoints": "auto",
+						"showValues": false,
+						"spanNulls": false,
+						"stacking": {
+							"group": "A",
+							"mode": "none"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						}
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Active Projects"
+						},
+						"properties": [
+							{
+								"id": "custom.gradientMode",
+								"value": "scheme"
+							},
+							{
+								"id": "color",
+								"value": {
+									"fixedColor": "blue",
+									"mode": "fixed"
+								}
+							}
+						]
+					}
+				]
+			},
+			"gridPos": {
+				"h": 9,
+				"w": 8,
+				"x": 8,
+				"y": 1
+			},
+			"id": 2,
+			"options": {
+				"legend": {
+					"calcs": [],
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": {
+					"hideZeros": false,
+					"mode": "single",
+					"sort": "none"
+				}
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT\r\n  collected_at as time,\r\n  active_projects as \"Active Projects\",\r\n  projects as \"Total Projects\"\r\nFROM template_snapshots\r\nWHERE template_id = '$template'\r\n  AND collected_at >= NOW() - INTERVAL '90 days'\r\nORDER BY collected_at",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Active Projects Trend",
+			"type": "timeseries"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"axisBorderShow": false,
+						"axisCenteredZero": false,
+						"axisColorMode": "text",
+						"axisLabel": "",
+						"axisPlacement": "auto",
+						"axisSoftMax": 100,
+						"axisSoftMin": 0,
+						"barAlignment": 0,
+						"barWidthFactor": 0.6,
+						"drawStyle": "line",
+						"fillOpacity": 100,
+						"gradientMode": "opacity",
+						"hideFrom": {
+							"legend": false,
+							"tooltip": false,
+							"viz": false
+						},
+						"insertNulls": false,
+						"lineInterpolation": "linear",
+						"lineWidth": 1,
+						"pointSize": 5,
+						"scaleDistribution": {
+							"type": "linear"
+						},
+						"showPoints": "auto",
+						"showValues": false,
+						"spanNulls": false,
+						"stacking": {
+							"group": "A",
+							"mode": "none"
+						},
+						"thresholdsStyle": {
+							"mode": "off"
+						}
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 9,
+				"w": 8,
+				"x": 16,
+				"y": 1
+			},
+			"id": 3,
+			"options": {
+				"legend": {
+					"calcs": [],
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": {
+					"hideZeros": false,
+					"mode": "single",
+					"sort": "none"
+				}
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT\r\n  collected_at as time,\r\n  retention_rate as \"Retention %\"\r\nFROM template_snapshots\r\nWHERE template_id = '$template'\r\n  AND collected_at >= NOW() - INTERVAL '90 days'\r\nORDER BY collected_at",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Retention Rate Over Time",
+			"type": "timeseries"
+		},
+		{
+			"collapsed": false,
+			"gridPos": {
+				"h": 1,
+				"w": 24,
+				"x": 0,
+				"y": 10
+			},
+			"id": 8,
+			"panels": [],
+			"title": "Template Growth",
+			"type": "row"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					},
+					"unit": "currency:financial:$"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 7,
+				"w": 24,
+				"x": 0,
+				"y": 11
+			},
+			"id": 4,
+			"options": {
+				"colorMode": "value",
+				"graphMode": "area",
+				"justifyMode": "auto",
+				"orientation": "auto",
+				"percentChangeColorMode": "standard",
+				"reduceOptions": {
+					"calcs": [
+						"lastNotNull"
+					],
+					"fields": "",
+					"values": false
+				},
+				"showPercentChange": false,
+				"textMode": "auto",
+				"wideLayout": true
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT \r\n  revenue_growth_24h as \"24h Growth\",\r\n  revenue_growth_7d as \"7d Growth\",\r\n  revenue_growth_30d as \"30d Growth\"\r\nFROM template_metrics_derived\r\nWHERE template_id = '$template'\r\nORDER BY calculated_at DESC \r\nLIMIT 1;",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Revenue Growth Rates",
+			"type": "stat"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"description": "shows recent templates / total templates. High % means explosive growth. 0% means stagnant. ",
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "red",
+								"value": 0
+							},
+							{
+								"color": "yellow",
+								"value": 10
+							},
+							{
+								"color": "green",
+								"value": 20
+							}
+						]
+					},
+					"unit": "percent"
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 10,
+				"w": 5,
+				"x": 0,
+				"y": 18
+			},
+			"id": 5,
+			"options": {
+				"minVizHeight": 75,
+				"minVizWidth": 75,
+				"orientation": "auto",
+				"reduceOptions": {
+					"calcs": [
+						"lastNotNull"
+					],
+					"fields": "",
+					"values": false
+				},
+				"showThresholdLabels": false,
+				"showThresholdMarkers": true,
+				"sizing": "auto"
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT growth_momentum as value\nFROM latest_template_metrics \nWHERE template_id = '$template'",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Growth Momentum Score",
+			"type": "gauge"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "palette-classic"
+					},
+					"custom": {
+						"axisBorderShow": false,
+						"axisCenteredZero": false,
+						"axisColorMode": "text",
+						"axisLabel": "",
+						"axisPlacement": "auto",
+						"fillOpacity": 50,
+						"hideFrom": {
+							"legend": false,
+							"tooltip": false,
+							"viz": false
+						},
+						"pointShape": "circle",
+						"pointSize": {
+							"fixed": 5
+						},
+						"pointStrokeWidth": 1,
+						"scaleDistribution": {
+							"type": "linear"
+						},
+						"show": "points"
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 10,
+				"w": 19,
+				"x": 5,
+				"y": 18
+			},
+			"id": 10,
+			"options": {
+				"legend": {
+					"calcs": [],
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"mapping": "auto",
+				"series": [
+					{}
+				],
+				"tooltip": {
+					"hideZeros": false,
+					"mode": "single",
+					"sort": "none"
+				}
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT\n       t.template_name as metric,\n       t.total_payout / 100.0 as \"Revenue\",\n       COALESCE(d.revenue_growth_30d / 100.0, 0) as \"30d Growth\"\n     FROM latest_template_metrics t\n     LEFT JOIN LATERAL (\n       SELECT revenue_growth_30d\n       FROM template_metrics_derived\n       WHERE template_id = t.template_id\n       ORDER BY calculated_at DESC LIMIT 1\n     ) d ON true\n     WHERE t.active_projects > 0\n",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Scatter Plot: Revenue vs Growth",
+			"type": "xychart"
+		},
+		{
+			"collapsed": false,
+			"gridPos": {
+				"h": 1,
+				"w": 24,
+				"x": 0,
+				"y": 28
+			},
+			"id": 9,
+			"panels": [],
+			"title": "All Templates Comparison",
+			"type": "row"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "auto",
+						"cellOptions": {
+							"type": "auto"
+						},
+						"footer": {
+							"reducers": []
+						},
+						"inspect": false
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							}
+						]
+					}
+				},
+				"overrides": [
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "Revenue"
+						},
+						"properties": [
+							{
+								"id": "unit",
+								"value": "currency:financial:$"
+							}
+						]
+					},
+					{
+						"matcher": {
+							"id": "byName",
+							"options": "7d Revenue"
+						},
+						"properties": [
+							{
+								"id": "unit",
+								"value": "currency:financial:$"
+							}
+						]
+					}
+				]
+			},
+			"gridPos": {
+				"h": 11,
+				"w": 24,
+				"x": 0,
+				"y": 29
+			},
+			"id": 6,
+			"options": {
+				"cellHeight": "sm",
+				"showHeader": true,
+				"sortBy": [
+					{
+						"desc": true,
+						"displayName": "Revenue"
+					}
+				]
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT\n       t.template_name as \"Template\",\n       t.category as \"Category\",\n       t.total_payout as \"Revenue\",\n       t.active_projects as \"Active\",\n       ROUND(t.retention_rate, 1) as \"Retention %\",\n       ROUND(t.growth_momentum, 1) as \"Growth %\",\n       t.health as \"Health\",\n       COALESCE(d.revenue_growth_7d, 0) as \"7d Revenue\",\n       ROUND(COALESCE(d.profitability_score, 0), 2) as \"Profit Score\"\n     FROM latest_template_metrics t\n     LEFT JOIN LATERAL (\n       SELECT revenue_growth_7d, profitability_score\n       FROM template_metrics_derived\n       WHERE template_id = t.template_id\n       ORDER BY calculated_at DESC LIMIT 1\n     ) d ON true\n  WHERE t.active_projects > 0\n    AND ('${category:csv}' = '' OR t.category = ANY(string_to_array('${category:csv}', ',')))\n",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Template Performance Matrix",
+			"type": "table"
+		}
+	],
+	"preload": false,
+	"schemaVersion": 42,
+	"tags": [
+		"railway-templates"
+	],
+	"templating": {
+		"list": [
+			{
+				"allowCustomValue": false,
+				"current": {
+					"text": "Plausible Analytics",
+					"value": "6d371192-9eec-48dc-a9a9-19ad01c883de"
+				},
+				"datasource": {
+					"type": "postgres",
+					"uid": "psql-gauge"
+				},
+				"definition": "SELECT template_name as __text, template_id as __value\nFROM latest_template_metrics\nORDER BY total_payout DESC",
+				"description": "Currently Selected Template",
+				"label": "Template",
+				"name": "template",
+				"options": [],
+				"query": "SELECT template_name as __text, template_id as __value\nFROM latest_template_metrics\nORDER BY total_payout DESC",
+				"refresh": 1,
+				"regex": "",
+				"type": "query"
+			},
+			{
+				"allowCustomValue": false,
+				"current": {
+					"text": "All",
+					"value": [
+						"$__all"
+					]
+				},
+				"datasource": {
+					"type": "postgres",
+					"uid": "psql-gauge"
+				},
+				"definition": "SELECT DISTINCT category\nFROM latest_template_metrics\nWHERE category IS NOT NULL",
+				"description": "the category of template",
+				"includeAll": true,
+				"label": "Category",
+				"multi": true,
+				"name": "category",
+				"options": [],
+				"query": "SELECT DISTINCT category\nFROM latest_template_metrics\nWHERE category IS NOT NULL",
+				"refresh": 1,
+				"regex": "",
+				"sort": 1,
+				"type": "query"
+			}
+		]
+	},
+	"time": {
+		"from": "now-30d",
+		"to": "now"
+	},
+	"timepicker": {},
+	"timezone": "browser",
+	"title": "Template Drilldown",
+	"uid": "gauge-drilldown",
+	"version": 23
+}

@@ -1,0 +1,291 @@
+{
+	"annotations": {
+		"list": [
+			{
+				"builtIn": 1,
+				"datasource": {
+					"type": "grafana",
+					"uid": "-- Grafana --"
+				},
+				"enable": true,
+				"hide": true,
+				"iconColor": "rgba(0, 211, 255, 1)",
+				"name": "Annotations & Alerts",
+				"type": "dashboard"
+			}
+		]
+	},
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": 5,
+	"links": [],
+	"panels": [
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "auto",
+						"cellOptions": {
+							"type": "auto"
+						},
+						"footer": {
+							"reducers": []
+						},
+						"inspect": false
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 9,
+				"w": 12,
+				"x": 0,
+				"y": 0
+			},
+			"id": 1,
+			"options": {
+				"cellHeight": "sm",
+				"showHeader": true
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT\n       template_name as \"Template\",\n       health as \"Health\",\n       CASE\n         WHEN health < 60 THEN 'CRITICAL'\n         WHEN health < 70 THEN 'WARNING'\n         ELSE 'OK'\n       END as \"Severity\"\n     FROM latest_template_metrics\n     WHERE health < 70\n     ORDER BY health ASC\n",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Critical Health Alerts",
+			"type": "table"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "auto",
+						"cellOptions": {
+							"type": "auto"
+						},
+						"footer": {
+							"reducers": []
+						},
+						"inspect": false
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 9,
+				"w": 12,
+				"x": 12,
+				"y": 0
+			},
+			"id": 2,
+			"options": {
+				"cellHeight": "sm",
+				"showHeader": true
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "SELECT\n       t.template_name as \"Template\",\n       t.active_projects as \"Current Active\",\n       d.active_projects_change_7d as \"7d Change\",\n       d.revenue_growth_7d / 100.0 as \"7d Revenue Δ\"\n     FROM latest_template_metrics t\n     JOIN LATERAL (\n       SELECT active_projects_change_7d, revenue_growth_7d\n       FROM template_metrics_derived\n       WHERE template_id = t.template_id\n       ORDER BY calculated_at DESC LIMIT 1\n     ) d ON true\n     WHERE d.active_projects_change_7d < 0\n        OR d.revenue_growth_7d < 0\n     ORDER BY d.revenue_growth_7d ASC",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Declining Template Health",
+			"type": "table"
+		},
+		{
+			"datasource": {
+				"type": "postgres",
+				"uid": "psql-gauge"
+			},
+			"fieldConfig": {
+				"defaults": {
+					"color": {
+						"mode": "thresholds"
+					},
+					"custom": {
+						"align": "auto",
+						"cellOptions": {
+							"type": "auto"
+						},
+						"footer": {
+							"reducers": []
+						},
+						"inspect": false
+					},
+					"mappings": [],
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{
+								"color": "green",
+								"value": 0
+							},
+							{
+								"color": "red",
+								"value": 80
+							}
+						]
+					}
+				},
+				"overrides": []
+			},
+			"gridPos": {
+				"h": 9,
+				"w": 24,
+				"x": 0,
+				"y": 9
+			},
+			"id": 3,
+			"options": {
+				"cellHeight": "sm",
+				"showHeader": true
+			},
+			"pluginVersion": "12.3.1",
+			"targets": [
+				{
+					"dataset": "railway",
+					"datasource": {
+						"type": "postgres",
+						"uid": "psql-gauge"
+					},
+					"editorMode": "code",
+					"format": "table",
+					"rawQuery": true,
+					"rawSql": "     SELECT\n       template_name as \"Template\",\n       category as \"Category\",\n       active_projects as \"Active Projects\",\n       recent_projects as \"Recent Projects\",\n       health as \"Health\"\n     FROM latest_template_metrics\n     WHERE recent_projects = 0\n       AND active_projects > 0\n     ORDER BY total_payout DESC\n",
+					"refId": "A",
+					"sql": {
+						"columns": [
+							{
+								"parameters": [],
+								"type": "function"
+							}
+						],
+						"groupBy": [
+							{
+								"property": {
+									"type": "string"
+								},
+								"type": "groupBy"
+							}
+						],
+						"limit": 50
+					}
+				}
+			],
+			"title": "Zero Recent Projects (Stinkers)",
+			"type": "table"
+		}
+	],
+	"preload": false,
+	"schemaVersion": 42,
+	"tags": [
+		"railway-templates"
+	],
+	"templating": {
+		"list": []
+	},
+	"time": {
+		"from": "now-30d",
+		"to": "now"
+	},
+	"timepicker": {},
+	"timezone": "browser",
+	"title": "Template Health & Alerts",
+	"uid": "gauge-health",
+	"version": 5
+}
