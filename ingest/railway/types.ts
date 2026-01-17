@@ -30,16 +30,16 @@ export const TemplateSchema = z.object({
   description: z.string().nullable().optional(),
   image: z.string().nullable().optional(),
   category: z.string().nullable().optional(),
-  tags: z.array(z.string()).nullable().optional(),
-  languages: z.array(z.string()).nullable().optional(),
+  tags: z.array(z.string()).nullable().optional().transform(v => v ?? []),
+  languages: z.array(z.string()).nullable().optional().transform(v => v ?? []),
   status: z.string().nullable().optional(),
   isApproved: z.boolean().nullable().optional(),
   isVerified: z.boolean().nullable().optional(),
   health: z.union([z.string(), z.number()]).nullable().optional(),
-  projects: z.number(),
-  activeProjects: z.number(),
-  recentProjects: z.number(),
-  totalPayout: z.number(),
+  projects: z.number().nullable().optional().transform(v => v ?? 0),
+  activeProjects: z.number().nullable().optional().transform(v => v ?? 0),
+  recentProjects: z.number().nullable().optional().transform(v => v ?? 0),
+  totalPayout: z.number().nullable().optional().transform(v => v ?? 0),
 });
 
 // GraphQL error schema
