@@ -285,7 +285,7 @@ export class GaugeDatabase {
           WHERE template_id = current.template_id
             AND collected_at >= ${collectedAt}::TIMESTAMPTZ - INTERVAL '24 hours'
             AND collected_at < ${collectedAt}
-          ORDER BY collected_at DESC
+          ORDER BY collected_at ASC
           LIMIT 1
         ) prev_24h ON true
         LEFT JOIN LATERAL (
@@ -294,7 +294,7 @@ export class GaugeDatabase {
           WHERE template_id = current.template_id
             AND collected_at >= ${collectedAt}::TIMESTAMPTZ - INTERVAL '7 days'
             AND collected_at < ${collectedAt}
-          ORDER BY collected_at DESC
+          ORDER BY collected_at ASC
           LIMIT 1
         ) prev_7d ON true
         LEFT JOIN LATERAL (
@@ -303,7 +303,7 @@ export class GaugeDatabase {
           WHERE template_id = current.template_id
             AND collected_at >= ${collectedAt}::TIMESTAMPTZ - INTERVAL '30 days'
             AND collected_at < ${collectedAt}
-          ORDER BY collected_at DESC
+          ORDER BY collected_at ASC
           LIMIT 1
         ) prev_30d ON true
         WHERE current.collected_at = ${collectedAt}
