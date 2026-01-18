@@ -1,5 +1,7 @@
 # Deploy and Host Gauge on Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/gauge?referralCode=IFlm92&utm_medium=integration&utm_source=template&utm_campaign=generic)
+
 A complete metrics and analytics stack for Railway Template creators. featuring automated data collection, PostgreSQL persistence, and pre-configured Grafana dashboards to track revenue, health, and growth.
 
 ## About Hosting Gauge
