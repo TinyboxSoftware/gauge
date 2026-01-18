@@ -22,13 +22,13 @@ The system automatically handles time-series growth calculations (24h, 7d, 30d) 
 
 ## Dependencies for Gauge Hosting
 
-- **Railway Volumes:** For persistent PostgreSQL storage of historical metrics.
-- **Docker Images:** Pre-configured environments for Bun (Ingest Service) and Grafana (Visualization).
+None! everything runs on Railway.
 
 ## Deployment Dependencies
 
 - **Railway API Token:** Required to fetch metrics from your account; should be an account level token.
-- **Railway Customer & Workspace IDs:** For targeted API queries.
+- **Railway Workspace IDs:** For the workspace containing your templates. You can get this by hitting `ctrl+k` on the dashboard and typing `Copy Active Workspace ID`
+- **Railway Customer ID:** For your account. You can get this by navigating to your Earnings tab, opening your browser's dev tools (`ctrl+shift+I`), navigating to the networking tab, and filtering for requests containing `internal?q=unifiedWithdrawalsV2`. Go to the "Request" tab and your customerID should be under "Variables" in the request body.
 - **Grafana Documentation:** For advanced dashboard customization.
 - **Railway GraphQL API:** The source of truth for all ingested data.
 
@@ -82,10 +82,6 @@ These variables configure the Grafana instance and its connection to the databas
 | `DATABASE_PASSWORD` | Database password | `${{Postgres.POSTGRES_PASSWORD}}` |
 | `DATABASE_NAME` | Database name | `${{Postgres.POSTGRES_DB}}` |
 
-### Internal Service URLs
-
-The stack components communicate internally using these Railway's internal networking
-
 ### Version Control
 
 Each service is pinned to stable versions for production reliability:
@@ -106,7 +102,7 @@ Each service is pinned to stable versions for production reliability:
 
 To customize dashboards or collection logic:
 
-1. **Fork the GitHub repository.**
+1. [**Fork the GitHub repository.**](https://github.com/TinyboxSoftware/gauge)
 2. Modify the ingest logic in `ingest/index.ts`
 3. Update dashboard JSON templates in `grafana/dashboards/templates/` to add custom visualizations.
 4. Commit, relink the repo, and push; Railway will automatically redeploy the updated services.
