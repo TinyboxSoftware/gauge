@@ -593,7 +593,7 @@
 					"editorMode": "code",
 					"format": "table",
 					"rawQuery": true,
-					"rawSql": "WITH daily_snapshots AS (\r\n  -- Get the last snapshot of each day\r\n  SELECT DISTINCT ON (collected_at::date)\r\n    collected_at::date as date,\r\n    template_earnings_lifetime\r\n  FROM earnings_snapshots\r\n  WHERE collected_at >= NOW() - INTERVAL '30 days'\r\n  ORDER BY collected_at::date, collected_at DESC\r\n),\r\ndaily_deltas AS (\r\n  SELECT\r\n    date,\r\n    template_earnings_lifetime,\r\n    LAG(template_earnings_lifetime) OVER (ORDER BY date) as prev_earnings\r\n  FROM daily_snapshots\r\n)\r\nSELECT\r\n  date as time,\r\n  COALESCE((template_earnings_lifetime - prev_earnings) / 100.0, 0) as \"Daily Revenue\"\r\nFROM daily_deltas\r\nORDER BY date",
+					"rawSql": "WITH daily_snapshots AS (\r\n  SELECT DISTINCT ON (collected_at::date)\r\n    collected_at::date as date,\r\n    template_earnings_lifetime\r\n  FROM earnings_snapshots\r\n  WHERE collected_at >= NOW() - INTERVAL '30 days'\r\n  ORDER BY collected_at::date, collected_at DESC\r\n),\r\ndaily_deltas AS (\r\n  SELECT\r\n    date,\r\n    template_earnings_lifetime,\r\n    LAG(template_earnings_lifetime) OVER (ORDER BY date) as prev_earnings,\r\n    LAG(date) OVER (ORDER BY date) as prev_date\r\n  FROM daily_snapshots\r\n)\r\nSELECT\r\n  date as time,\r\n  COALESCE(\r\n    (template_earnings_lifetime - prev_earnings) /\r\n    GREATEST((date - prev_date)::int, 1) / 100.0,\r\n    0\r\n  ) as \"Daily Revenue\"\r\nFROM daily_deltas\r\nORDER BY date",
 					"refId": "A",
 					"sql": {
 						"columns": [

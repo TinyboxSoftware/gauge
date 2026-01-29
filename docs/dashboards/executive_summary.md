@@ -44,8 +44,8 @@ It serves as the main cockpit for tracking overall business health and year to d
 
 ### Daily Revenue
 
-- **Purpose**: Displays the incremental revenue gained each day for the last 30 days.
-- **Calculation**: Uses the `LAG()` window function to calculate the difference in `template_earnings_lifetime` between consecutive daily snapshots.
+- **Purpose**: Displays the average daily revenue for the last 30 days, normalized to account for variable snapshot intervals.
+- **Calculation**: Uses the `LAG()` window function to calculate the difference in `template_earnings_lifetime` between consecutive snapshots, then divides by the number of days elapsed between them. This ensures accurate daily averages even if snapshots are taken less frequently than once per day.
 
 ### Top 5 Revenue-Generating Templates
 
