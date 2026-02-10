@@ -73,9 +73,19 @@ export const TemplatesResponseSchema = z.object({
   }),
 });
 
+// Workspace response schema (for fetching customer ID)
+export const WorkspaceResponseSchema = z.object({
+  workspace: z.object({
+    customer: z.object({
+      id: z.string(),
+    }),
+  }),
+});
+
 // Infer TypeScript types from schemas
 export type EarningDetails = z.infer<typeof EarningDetailsSchema>;
 export type Template = z.infer<typeof TemplateSchema>;
 export type GraphQLError = z.infer<typeof GraphQLErrorSchema>;
 export type EarningsResponse = z.infer<typeof EarningsResponseSchema>;
 export type TemplatesResponse = z.infer<typeof TemplatesResponseSchema>;
+export type WorkspaceResponse = z.infer<typeof WorkspaceResponseSchema>;

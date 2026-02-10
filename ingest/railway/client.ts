@@ -9,15 +9,16 @@ import type { Logger } from 'pino';
 import {
   EarningsResponseSchema,
   TemplatesResponseSchema,
+  WorkspaceResponseSchema,
   type EarningDetails,
   type Template,
 } from './types';
 import { EARNINGS_QUERY, EARNINGS_OPERATION } from './queries/earnings';
 import { TEMPLATES_QUERY, TEMPLATES_OPERATION } from './queries/templates';
+import { WORKSPACE_QUERY, WORKSPACE_OPERATION } from './queries/workspace';
 
 export interface RailwayClientConfig {
   apiToken: string;
-  customerId: string;
   workspaceId: string;
   logger?: Logger;
 }
@@ -35,15 +36,39 @@ export class RailwayAPIError extends Error {
 export class RailwayClient {
   private readonly endpoint = 'https://backboard.railway.com/graphql/internal';
   private readonly apiToken: string;
-  private readonly customerId: string;
   private readonly workspaceId: string;
   private readonly logger?: Logger;
+  private customerId: string | null = null;
 
   constructor(config: RailwayClientConfig) {
     this.apiToken = config.apiToken;
-    this.customerId = config.customerId;
     this.workspaceId = config.workspaceId;
     this.logger = config.logger;
+  }
+
+  /**
+   * Fetch customer ID from the workspace
+   * This is called automatically on first use if not already fetched
+   */
+  private async fetchCustomerId(): Promise<string> {
+    if (this.customerId) {
+      return this.customerId;
+    }
+
+    this.logger?.info({ workspaceId: this.workspaceId }, 'Fetching customer ID from workspace');
+
+    const response = await this.executeQuery(
+      WORKSPACE_QUERY,
+      { workspaceId: this.workspaceId },
+      WORKSPACE_OPERATION,
+      (data) => WorkspaceResponseSchema.parse(data),
+    );
+
+    const customerId = response.workspace.customer.id;
+    this.customerId = customerId;
+    this.logger?.info({ customerId }, 'Customer ID fetched from workspace');
+
+    return customerId;
   }
 
   /**
@@ -140,11 +165,12 @@ export class RailwayClient {
    * (templates, referrals, bounties, threads)
    */
   async getEarnings(): Promise<EarningDetails> {
-    this.logger?.info({ customerId: this.customerId }, 'Fetching earnings data from Railway');
+    const customerId = await this.fetchCustomerId();
+    this.logger?.info({ customerId }, 'Fetching earnings data from Railway');
 
     const response = await this.executeQuery(
       EARNINGS_QUERY,
-      { customerId: this.customerId },
+      { customerId },
       EARNINGS_OPERATION,
       (data) => EarningsResponseSchema.parse(data),
     );

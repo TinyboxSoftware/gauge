@@ -10,7 +10,6 @@ const configSchema = z.object({
 	RAILWAY_API_TOKEN: z.string().min(1, 'Railway API token is required'),
 
 	// reference IDs
-	RAILWAY_CUSTOMER_ID: z.string().uuid('Railway customer ID must be a valid UUID'),
 	RAILWAY_WORKSPACE_ID: z.string().uuid('Railway workspace ID must be a valid UUID'),
 
 	// database connection string 
@@ -68,7 +67,6 @@ export const loadConfig = async (parentLogger?: Logger): Promise<Config> => {
 
 	const unsafeConfig = {
 		RAILWAY_API_TOKEN: Bun.env.RAILWAY_API_TOKEN,
-		RAILWAY_CUSTOMER_ID: Bun.env.RAILWAY_CUSTOMER_ID,
 		RAILWAY_WORKSPACE_ID: Bun.env.RAILWAY_WORKSPACE_ID,
 		DATABASE_URL: Bun.env.DATABASE_URL
 	}

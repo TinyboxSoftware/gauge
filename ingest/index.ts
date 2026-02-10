@@ -33,7 +33,6 @@ async function collectMetrics() {
 		logger.info('Initializing Railway API client...');
 		const railwayClient = new RailwayClient({
 			apiToken: config.RAILWAY_API_TOKEN,
-			customerId: config.RAILWAY_CUSTOMER_ID,
 			workspaceId: config.RAILWAY_WORKSPACE_ID,
 			logger,
 		});
