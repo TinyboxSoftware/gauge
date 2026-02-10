@@ -40,7 +40,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
-			"description": "Earnings tracked since January 1st based on collected snapshots. Gauge computes revenue by taking snapshots on each cron run and calculating diffs over time.",
+			"description": "Earnings tracked since January 1st based on collected snapshots. Gauge computes revenue by taking snapshots on each cron run and calculating diffs over time. Falls back to showing the previous 30 days of earnings when YTD data equals 0 (e.g., after initial deployment).",
 			"fieldConfig": {
 				"defaults": {
 					"color": {
@@ -125,7 +125,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
-			"description": "Daily average based on collected snapshot data. This metric will become more accurate as more snapshots accumulate over time.",
+			"description": "Daily average based on collected snapshot data. This metric will become more accurate as more snapshots accumulate over time. Falls back to calculating the average from the previous 30 days (30-day total / 30) when YTD data equals 0 (e.g., after initial deployment).",
 			"fieldConfig": {
 				"defaults": {
 					"color": {
@@ -511,7 +511,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
-			"description": "Blue line is average at the start of 2026 Green line is goal for end of 2026",
+			"description": "Shows daily revenue calculated from lifetime earnings differences between consecutive snapshots, normalized by the number of days elapsed. Each bar represents the average daily revenue for that period, accounting for variable snapshot intervals.",
 			"fieldConfig": {
 				"defaults": {
 					"color": {
