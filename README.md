@@ -30,7 +30,6 @@ None! everything runs on Railway.
 
 - **Railway API Token:** Required to fetch metrics from your account; should be an account level token.
 - **Railway Workspace IDs:** For the workspace containing your templates. You can get this by hitting `ctrl+k` on the dashboard and typing `Copy Active Workspace ID`
-- **Railway Customer ID:** For your account. You can get this by navigating to your Earnings tab, opening your browser's dev tools (`ctrl+shift+I`), navigating to the networking tab, and filtering for requests containing `internal?q=unifiedWithdrawalsV2`. Go to the "Request" tab and your customerID should be under "Variables" in the request body.
 - **Grafana Documentation:** For advanced dashboard customization.
 - **Railway GraphQL API:** The source of truth for all ingested data.
 
@@ -40,22 +39,18 @@ None! everything runs on Railway.
 
 #### Deploying Services 
 
-1. Click **"Deploy on Railway"** and provide your Railway API credentials, Customer ID, and Workspace ID in the environment variables.
+1. Click **"Deploy on Railway"** and provide your Railway API credentials, and Workspace ID in the environment variables.
 2. Set your desired Grafana admin username.
 3. Wait 2-3 minutes for the services to initialize.
 
-#### Configure Ingest CRON Service
-
-1. Manually configure the ingest service's schedule by going to settings -> Cron Schedule -> Add Schedule
-2. I would suggest starting with `0 0,12 * * *` which would be every 12 hours in UTC time 
-3. From now on, your ingest will run on a schedule and pull in your Railway Template metrics
+**Note on Initial Data:** Since the ingest service is configured as a cron job, your dashboards won't display any metrics data until the first scheduled collection runs. This is expected behavior for scheduled workers on Railway. If you need immediate visibility, you can manually trigger the ingest service from the Railway dashboard. Future improvements may include an automatic initial run on deployment.
 
 #### Access your dashboards via Grafana
 
 1. Grab the automatically generated domain from the Grafana service.
 2. Grab your generated password from the Grafna Service -> Variables -> `GF_SECURITY_ADMIN_PASSWORD` and copy it. 
-7. Access your **Executive Summary** dashboard via the generated domain and username/password.
-8. OPTIONAL: add a custom domain to your Grafana service so it's easier to remember. 
+3. Access your **Executive Summary** dashboard via the generated domain and username/password.
+4. OPTIONAL: add a custom domain to your Grafana service so it's easier to remember. 
 
 ### Environment Variables
 
@@ -66,7 +61,6 @@ These variables control the collection and processing of Railway API data.
 | Variable | Description | Default |
 | :--- | :--- | :--- |
 | `RAILWAY_API_TOKEN` | Your Railway personal API token | **Required** |
-| `RAILWAY_CUSTOMER_ID` | Your Railway Customer UUID | **Required** |
 | `RAILWAY_WORKSPACE_ID` | Your Railway Workspace UUID | **Required** |
 | `DATABASE_URL` | PostgreSQL connection string | *Provided by Railway* |
 
