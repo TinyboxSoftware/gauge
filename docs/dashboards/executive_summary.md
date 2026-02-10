@@ -14,14 +14,14 @@ It serves as the main cockpit for tracking overall business health and year to d
 ### Tracked YTD Earnings
 
 - **Purpose**: Displays the total revenue earned from all templates since January 1st (or your first collected snapshot) of the current year.
-- **Calculation**: Subtracts the `template_earnings_lifetime` value at the start of the year from the most recent snapshot.
-- **Data Source**: Based on collected snapshots; will start accumulating once you have a few days of cron runs completed.
+- **Calculation**: Subtracts the `template_earnings_lifetime` value at the start of the year from the most recent snapshot. If the YTD calculation equals 0 (e.g., after initial deployment), it falls back to showing the previous 30 days of earnings (`template_earnings_30d`) to provide meaningful data immediately.
+- **Data Source**: Based on collected snapshots; will start accumulating once you have a few days of cron runs completed. Shows 30-day earnings as a fallback when YTD data is not yet available.
 
 ### Average Daily Earnings (Tracked YTD)
 
 - **Purpose**: Shows the average amount earned per day based on tracked snapshots throughout the current year.
-- **Calculation**: Total tracked YTD earnings divided by the number of days elapsed since the first snapshot of the year.
-- **Data Source**: Computed from snapshot diffs; accuracy improves as more snapshots are collected over time.
+- **Calculation**: Total tracked YTD earnings divided by the number of days elapsed since the first snapshot of the year. If the YTD average equals 0 (e.g., after initial deployment), it falls back to calculating the average from the previous 30 days (`template_earnings_30d / 30`) to provide immediate insights.
+- **Data Source**: Computed from snapshot diffs; accuracy improves as more snapshots are collected over time. Uses 30-day average as a fallback when YTD data is not yet available.
 
 ### Projected Year End Revenue
 
