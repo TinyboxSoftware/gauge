@@ -40,7 +40,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
-			"description": "Earnings tracked since January 1st based on collected snapshots. Gauge computes revenue by taking snapshots on each cron run and calculating diffs over time.",
+			"description": "Earnings tracked since January 1st based on collected snapshots. Gauge computes revenue by taking snapshots on each cron run and calculating diffs over time. Falls back to showing the previous 30 days of earnings when YTD data equals 0 (e.g., after initial deployment).",
 			"fieldConfig": {
 				"defaults": {
 					"color": {
@@ -96,7 +96,7 @@
 					"editorMode": "code",
 					"format": "table",
 					"rawQuery": true,
-					"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n)\r\nSELECT (c.template_earnings_lifetime - y.template_earnings_lifetime) / 100.0 as value\r\nFROM current c, year_start y;\r\n",
+					"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime, template_earnings_30d FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n),\r\nytd_value AS (\r\n  SELECT (c.template_earnings_lifetime - y.template_earnings_lifetime) / 100.0 as value\r\n  FROM current c, year_start y\r\n)\r\nSELECT \r\n  CASE \r\n    WHEN ytd.value = 0 THEN (SELECT template_earnings_30d / 100.0 FROM current)\r\n    ELSE ytd.value\r\n  END as value\r\nFROM ytd_value ytd;\r\n",
 					"refId": "A",
 					"sql": {
 						"columns": [
@@ -125,7 +125,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
-			"description": "Daily average based on collected snapshot data. This metric will become more accurate as more snapshots accumulate over time.",
+			"description": "Daily average based on collected snapshot data. This metric will become more accurate as more snapshots accumulate over time. Falls back to calculating the average from the previous 30 days (30-day total / 30) when YTD data equals 0 (e.g., after initial deployment).",
 			"fieldConfig": {
 				"defaults": {
 					"color": {
@@ -181,7 +181,7 @@
 					"editorMode": "code",
 					"format": "table",
 					"rawQuery": true,
-					"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n)\r\nSELECT \r\n  (c.template_earnings_lifetime - y.template_earnings_lifetime)::float / \r\n  GREATEST(EXTRACT(EPOCH FROM (c.collected_at - y.collected_at)) / 86400, 1) / 100.0 as value\r\nFROM current c, year_start y;\r\n",
+					"rawSql": "WITH year_start AS (\r\n  SELECT template_earnings_lifetime, collected_at FROM earnings_snapshots\r\n  WHERE EXTRACT(YEAR FROM collected_at) = EXTRACT(YEAR FROM CURRENT_DATE)\r\n  ORDER BY collected_at ASC LIMIT 1\r\n),\r\ncurrent AS (\r\n  SELECT template_earnings_lifetime, template_earnings_30d, collected_at FROM earnings_snapshots\r\n  ORDER BY collected_at DESC LIMIT 1\r\n),\r\nytd_avg AS (\r\n  SELECT \r\n    (c.template_earnings_lifetime - y.template_earnings_lifetime)::float / \r\n    GREATEST(EXTRACT(EPOCH FROM (c.collected_at - y.collected_at)) / 86400, 1) / 100.0 as value\r\n  FROM current c, year_start y\r\n)\r\nSELECT \r\n  CASE \r\n    WHEN ytd.value = 0 THEN (SELECT template_earnings_30d / 30.0 / 100.0 FROM current)\r\n    ELSE ytd.value\r\n  END as value\r\nFROM ytd_avg ytd;\r\n",
 					"refId": "A",
 					"sql": {
 						"columns": [
@@ -511,7 +511,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
-			"description": "Blue line is average at the start of 2026 Green line is goal for end of 2026",
+			"description": "Shows daily revenue calculated from lifetime earnings differences between consecutive snapshots, normalized by the number of days elapsed. Each bar represents the average daily revenue for that period, accounting for variable snapshot intervals.",
 			"fieldConfig": {
 				"defaults": {
 					"color": {
