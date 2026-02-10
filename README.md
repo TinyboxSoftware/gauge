@@ -43,6 +43,8 @@ None! everything runs on Railway.
 2. Set your desired Grafana admin username.
 3. Wait 2-3 minutes for the services to initialize.
 
+**Note on Initial Data:** Since the ingest service is configured as a cron job, your dashboards won't display any metrics data until the first scheduled collection runs. This is expected behavior for scheduled workers on Railway. If you need immediate visibility, you can manually trigger the ingest service from the Railway dashboard. Future improvements may include an automatic initial run on deployment.
+
 #### Access your dashboards via Grafana
 
 1. Grab the automatically generated domain from the Grafana service.
