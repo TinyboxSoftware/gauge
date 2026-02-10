@@ -32,7 +32,7 @@
 			},
 			"id": 9,
 			"panels": [],
-			"title": "YTD",
+			"title": "Tracked YTD",
 			"type": "row"
 		},
 		{
@@ -40,6 +40,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
+			"description": "Earnings tracked since January 1st based on collected snapshots. Gauge computes revenue by taking snapshots on each cron run and calculating diffs over time.",
 			"fieldConfig": {
 				"defaults": {
 					"color": {
@@ -116,7 +117,7 @@
 					}
 				}
 			],
-			"title": "YTD Earnings",
+			"title": "Tracked YTD Earnings",
 			"type": "stat"
 		},
 		{
@@ -124,6 +125,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
+			"description": "Daily average based on collected snapshot data. This metric will become more accurate as more snapshots accumulate over time.",
 			"fieldConfig": {
 				"defaults": {
 					"color": {
@@ -200,7 +202,7 @@
 					}
 				}
 			],
-			"title": "Average Daily Earnings YTD",
+			"title": "Average Daily Earnings (Tracked YTD)",
 			"type": "stat"
 		},
 		{
@@ -208,6 +210,7 @@
 				"type": "postgres",
 				"uid": "psql-gauge"
 			},
+			"description": "Linear projection based on tracked earnings velocity from collected snapshots. Projection accuracy improves as more data accumulates.",
 			"fieldConfig": {
 				"defaults": {
 					"color": {

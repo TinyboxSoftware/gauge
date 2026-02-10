@@ -7,23 +7,25 @@ The Executive Summary dashboard provides a high-level overview of total earnings
 It serves as the main cockpit for tracking overall business health and year to date progress.
 
 > [!NOTE]
-> The dashboard can only track historical data from the date of your first deployment onwards. For your first year of use, "YTD" metrics will calculate progress starting from your initial data collection through to the end of the calendar year.
+> Gauge works by taking a snapshot of your metrics on each cron run, then computing diffs over time. "Tracked YTD" metrics are relative to the data Gauge has collected, starting from your first deployment. These metrics will become more accurate and meaningful once you have several days of snapshot data accumulated.
 
 ## Visualizations
 
-### YTD Earnings
+### Tracked YTD Earnings
 
-- **Purpose**: Displays the total revenue earned from all templates since January 1st (or the first day you deployed this template) of the current year.
+- **Purpose**: Displays the total revenue earned from all templates since January 1st (or your first collected snapshot) of the current year.
 - **Calculation**: Subtracts the `template_earnings_lifetime` value at the start of the year from the most recent snapshot.
+- **Data Source**: Based on collected snapshots; will start accumulating once you have a few days of cron runs completed.
 
-### Average Daily Earnings YTD
+### Average Daily Earnings (Tracked YTD)
 
-- **Purpose**: Shows the average amount earned per day throughout the current year.
-- **Calculation**: Total YTD earnings divided by the number of days elapsed since the start of the year.
+- **Purpose**: Shows the average amount earned per day based on tracked snapshots throughout the current year.
+- **Calculation**: Total tracked YTD earnings divided by the number of days elapsed since the first snapshot of the year.
+- **Data Source**: Computed from snapshot diffs; accuracy improves as more snapshots are collected over time.
 
 ### Projected Year End Revenue
 
-- **Purpose**: Predicts total revenue for the end of the year based on current earning velocity.
+- **Purpose**: Predicts total revenue for the end of the year based on current earning velocity from collected data.
 - **Calculation**:
 
   ```sql
@@ -31,6 +33,7 @@ It serves as the main cockpit for tracking overall business health and year to d
   ```
 
   It combines current lifetime earnings with a linear projection of the daily average for the remaining days in the calendar year.
+- **Data Source**: Projection based on snapshot-derived trends; becomes more reliable with more historical data.
 
 ### Total Template Earnings 30d
 
