@@ -84,6 +84,49 @@ CREATE INDEX IF NOT EXISTS idx_template_id ON template_snapshots(template_id);
 CREATE INDEX IF NOT EXISTS idx_template_category ON template_snapshots(category);
 CREATE INDEX IF NOT EXISTS idx_template_total_payout ON template_snapshots(total_payout DESC);
 
+-- Table: template_deployment_snapshots
+-- Stores per-template deploy counters from the creator-private templateMetrics
+-- query. These count deploys, including redeploys of an existing install, and
+-- are therefore a different population from template_snapshots.projects, which
+-- counts projects created from the template.
+CREATE TABLE IF NOT EXISTS template_deployment_snapshots (
+    id SERIAL PRIMARY KEY,
+    collected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- Template identification
+    template_id TEXT NOT NULL,
+    template_code TEXT,
+    template_name TEXT NOT NULL,
+
+    -- Deploy counters
+    total_deployments INTEGER NOT NULL,
+    deployments_last_90d INTEGER NOT NULL,
+    active_deployments INTEGER NOT NULL,
+
+    -- Health percentages over Railway's rolling window
+    template_health NUMERIC(5,2),
+    support_health NUMERIC(5,2),
+
+    -- Earnings, in dollars: templateMetrics reports dollars where
+    -- earnings_snapshots reports cents
+    total_earnings NUMERIC(12,2),
+    earnings_last_30d NUMERIC(12,2),
+    earnings_last_90d NUMERIC(12,2),
+    eligible_for_support_bonus BOOLEAN,
+
+    -- Failed deploys implied by health, stored so the count is queryable
+    -- directly instead of being re-derived in every query
+    failed_deployments INTEGER,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    UNIQUE(collected_at, template_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_deployment_collected_at ON template_deployment_snapshots(collected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_deployment_template_id ON template_deployment_snapshots(template_id);
+CREATE INDEX IF NOT EXISTS idx_deployment_health ON template_deployment_snapshots(template_health);
+
 -- Table: template_metrics_derived
 -- Stores calculated time-series metrics (revenue growth, etc.)
 -- This table is populated by comparing snapshots over time
@@ -186,6 +229,33 @@ LEFT JOIN previous p ON l.template_id = p.template_id
 WHERE l.health < 70
    OR l.active_projects < COALESCE(p.prev_active_projects, l.active_projects);
 
+-- View: template_deployment_failures
+-- Deploys and failures added between consecutive snapshots of a template.
+-- health alone cannot answer "how many deploys failed since yesterday": it is a
+-- percentage over a rolling window, so it recovers as old failures age out. The
+-- deltas here do answer it.
+CREATE OR REPLACE VIEW template_deployment_failures AS
+SELECT
+    curr.collected_at,
+    curr.template_id,
+    curr.template_name,
+    curr.template_health,
+    curr.total_deployments,
+    curr.failed_deployments,
+    curr.total_deployments - prev.total_deployments AS deployments_added,
+    curr.failed_deployments - prev.failed_deployments AS failures_added,
+    prev.collected_at AS compared_to
+FROM template_deployment_snapshots curr
+LEFT JOIN LATERAL (
+    SELECT total_deployments, failed_deployments, collected_at
+    FROM template_deployment_snapshots prev
+    WHERE prev.template_id = curr.template_id
+      AND prev.collected_at < curr.collected_at
+    ORDER BY prev.collected_at DESC
+    LIMIT 1
+) prev ON true
+ORDER BY curr.collected_at DESC, failures_added DESC NULLS LAST;
+
 -- Function: calculate_profitability_score
 -- Calculates a composite profitability score for a template
 -- Weights: Revenue 40%, Growth 30%, Retention 20%, Health 10%
@@ -227,6 +297,9 @@ $$ LANGUAGE plpgsql;
 COMMENT ON TABLE earnings_snapshots IS 'Stores overall earnings data snapshots collected every 12 hours';
 COMMENT ON TABLE template_snapshots IS 'Stores individual template performance metrics collected every 12 hours';
 COMMENT ON TABLE template_metrics_derived IS 'Stores calculated metrics derived from comparing snapshots over time';
+COMMENT ON TABLE template_deployment_snapshots IS 'Stores per-template deploy counters and health from the creator-private templateMetrics query';
+COMMENT ON COLUMN template_deployment_snapshots.total_deployments IS 'Deploys of this template, including redeploys of an existing install - not the same population as template_snapshots.projects';
+COMMENT ON COLUMN template_deployment_snapshots.failed_deployments IS 'Deploys implied to have failed by health: total_deployments * (100 - template_health) / 100, rounded';
 COMMENT ON COLUMN template_snapshots.retention_rate IS 'Percentage of total projects that are still active (active/total * 100)';
 COMMENT ON COLUMN template_snapshots.revenue_per_active IS 'Average revenue per active project (total_payout / active_projects)';
 COMMENT ON COLUMN template_snapshots.growth_momentum IS 'Recent projects as percentage of active projects (recent/active * 100)';

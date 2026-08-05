@@ -5,9 +5,21 @@
 
 import { SQL } from 'bun';
 import type { Logger } from 'pino';
-import type { EarningDetails, Template } from '../railway/types';
+import type { EarningDetails, Template, TemplateMetrics } from '../railway/types';
 import { DatabaseError, SchemaError, InsertError } from './errors';
 import path from 'path';
+
+/**
+ * Tables the schema file is expected to provide. Adding a table here makes
+ * ensureSchema re-run the schema file on databases created before it existed;
+ * every statement in that file is idempotent, so re-running is safe.
+ */
+const REQUIRED_TABLES = [
+	'earnings_snapshots',
+	'template_snapshots',
+	'template_metrics_derived',
+	'template_deployment_snapshots',
+] as const;
 
 export interface GaugeDatabaseConfig {
 	connectionString: string;
@@ -37,7 +49,7 @@ export class GaugeDatabase {
         SELECT table_name
         FROM information_schema.tables
         WHERE table_schema = 'public'
-          AND table_name IN ('earnings_snapshots', 'template_snapshots', 'template_metrics_derived')
+          AND table_name IN ${this.sql(REQUIRED_TABLES)}
         ORDER BY table_name
       `;
 
@@ -58,7 +70,7 @@ export class GaugeDatabase {
 			// Check if tables exist
 			const existingTables = await this.checkTablesExist();
 
-			if (existingTables.length === 3) {
+			if (existingTables.length === REQUIRED_TABLES.length) {
 				this.logger?.info(
 					{ tableCount: existingTables.length },
 					'Database schema already exists'
@@ -67,7 +79,7 @@ export class GaugeDatabase {
 			}
 
 			this.logger?.info(
-				{ existingTables: existingTables.length, required: 3 },
+				{ existingTables: existingTables.length, required: REQUIRED_TABLES.length },
 				'Database schema incomplete, creating schema'
 			);
 
@@ -84,9 +96,9 @@ export class GaugeDatabase {
 			// Verify tables were created
 			const tables = await this.checkTablesExist();
 
-			if (tables.length < 3) {
+			if (tables.length < REQUIRED_TABLES.length) {
 				throw new SchemaError(
-					`Failed to create all required tables (created ${tables.length}/3)`
+					`Failed to create all required tables (created ${tables.length}/${REQUIRED_TABLES.length})`
 				);
 			}
 
@@ -224,6 +236,69 @@ export class GaugeDatabase {
 			return templates.length;
 		} catch (error) {
 			throw new InsertError('Failed to insert template snapshots', error);
+		}
+	}
+
+	/**
+	 * Insert per-template deployment snapshots into database
+	 *
+	 * Templates without metrics are skipped rather than stored as zeroes, so a
+	 * gap in the series means "not reported" and never "no deploys".
+	 */
+	async insertTemplateDeploymentSnapshots(
+		templates: Template[],
+		metrics: Map<string, TemplateMetrics>,
+		collectedAt: Date
+	): Promise<number> {
+		const rows = templates
+			.filter((t) => metrics.has(t.id))
+			.map((t) => {
+				const m = metrics.get(t.id)!;
+
+				// Health is the share of deploys that succeeded, so the rest failed.
+				const failedDeployments = Math.round(
+					(m.totalDeployments * (100 - m.templateHealth)) / 100
+				);
+
+				return {
+					collected_at: collectedAt,
+					template_id: t.id,
+					template_code: t.code ?? null,
+					template_name: t.name,
+					total_deployments: m.totalDeployments,
+					deployments_last_90d: m.deploymentsLast90Days,
+					active_deployments: m.activeDeployments,
+					template_health: m.templateHealth,
+					support_health: m.supportHealth,
+					total_earnings: m.totalEarnings,
+					earnings_last_30d: m.earningsLast30Days,
+					earnings_last_90d: m.earningsLast90Days,
+					eligible_for_support_bonus: m.eligibleForSupportBonus,
+					failed_deployments: failedDeployments,
+				};
+			});
+
+		this.logger?.info({ count: rows.length }, 'Inserting template deployment snapshots');
+
+		if (rows.length === 0) {
+			this.logger?.warn('No template deployment metrics to insert');
+			return 0;
+		}
+
+		try {
+			await this.sql`
+        INSERT INTO template_deployment_snapshots ${this.sql(rows)}
+        ON CONFLICT (collected_at, template_id) DO NOTHING
+      `;
+
+			this.logger?.info(
+				{ count: rows.length },
+				'Template deployment snapshots inserted successfully'
+			);
+
+			return rows.length;
+		} catch (error) {
+			throw new InsertError('Failed to insert template deployment snapshots', error);
 		}
 	}
 

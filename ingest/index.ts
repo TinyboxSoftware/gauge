@@ -78,6 +78,32 @@ async function collectMetrics() {
 		await db.insertTemplateSnapshots(templates, startTime);
 		logger.info({ count: templates.length }, 'Template snapshots persisted');
 
+		// Fetch deployment metrics. workspaceTemplates only carries the rounded
+		// health percentage; the deploy counts behind it come from templateMetrics,
+		// and their difference between runs is what turns health into a number of
+		// failed deploys.
+		logger.info('Fetching template deployment metrics from Railway...');
+		const deploymentMetrics = await railwayClient.getTemplateMetrics(
+			templates.map((t) => t.id),
+		);
+		const totalDeployments = [...deploymentMetrics.values()]
+			.reduce((sum, m) => sum + m.totalDeployments, 0);
+		const failedDeployments = [...deploymentMetrics.values()]
+			.reduce((sum, m) => sum + Math.round((m.totalDeployments * (100 - m.templateHealth)) / 100), 0);
+
+		logger.info(
+			{ count: deploymentMetrics.size, totalDeployments, failedDeployments },
+			'Deployment metrics fetched',
+		);
+
+		logger.info({ count: deploymentMetrics.size }, 'Persisting deployment snapshots to database...');
+		const deploymentRows = await db.insertTemplateDeploymentSnapshots(
+			templates,
+			deploymentMetrics,
+			startTime,
+		);
+		logger.info({ count: deploymentRows }, 'Deployment snapshots persisted');
+
 		// Calculate derived metrics
 		logger.info('Calculating derived metrics...');
 		await db.calculateDerivedMetrics(startTime);
@@ -92,6 +118,8 @@ async function collectMetrics() {
 			executionTime: `${duration.toFixed(2)}s`,
 			templatesProcessed: templates.length,
 			templateRevenue: `$${(totalRevenue / 100).toFixed(2)}`,
+			deploymentsTracked: totalDeployments,
+			deploymentsFailed: failedDeployments,
 		}, 'METRICS COLLECTION COMPLETED SUCCESSFULLY');
 
 	} catch (error) {

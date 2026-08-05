@@ -56,6 +56,29 @@ export const TemplateSnapshotSchema = z.object({
 });
 
 /**
+ * Schema for template_deployment_snapshots table rows
+ * Deploy counters from templateMetrics, plus the failure count they imply
+ */
+export const TemplateDeploymentSnapshotSchema = z.object({
+  id: z.number(),
+  collected_at: z.date(),
+  template_id: z.string(),
+  template_code: z.string().nullable(),
+  template_name: z.string(),
+  total_deployments: z.number(),
+  deployments_last_90d: z.number(),
+  active_deployments: z.number(),
+  template_health: z.number().nullable(),
+  support_health: z.number().nullable(),
+  total_earnings: z.number().nullable(),
+  earnings_last_30d: z.number().nullable(),
+  earnings_last_90d: z.number().nullable(),
+  eligible_for_support_bonus: z.boolean().nullable(),
+  failed_deployments: z.number().nullable(),
+  created_at: z.date(),
+});
+
+/**
  * Schema for template_metrics_derived table rows
  */
 export const TemplateMetricsDerivedSchema = z.object({
@@ -78,4 +101,5 @@ export const TemplateMetricsDerivedSchema = z.object({
 // Export inferred TypeScript types
 export type EarningsSnapshot = z.infer<typeof EarningsSnapshotSchema>;
 export type TemplateSnapshot = z.infer<typeof TemplateSnapshotSchema>;
+export type TemplateDeploymentSnapshot = z.infer<typeof TemplateDeploymentSnapshotSchema>;
 export type TemplateMetricsDerived = z.infer<typeof TemplateMetricsDerivedSchema>;

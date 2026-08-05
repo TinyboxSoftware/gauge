@@ -42,6 +42,20 @@ export const TemplateSchema = z.object({
   totalPayout: z.number().nullable().optional().transform(v => v ?? 0),
 });
 
+// Per-template deployment metrics schema (creator-private counters)
+export const TemplateMetricsSchema = z.object({
+  templateHealth: z.number(),
+  supportHealth: z.number(),
+  totalDeployments: z.number(),
+  deploymentsLast90Days: z.number(),
+  activeDeployments: z.number(),
+  // Earnings here are dollars, unlike the cents used by earningDetails
+  totalEarnings: z.number(),
+  earningsLast30Days: z.number(),
+  earningsLast90Days: z.number(),
+  eligibleForSupportBonus: z.boolean(),
+});
+
 // GraphQL error schema
 export const GraphQLErrorSchema = z.object({
   message: z.string(),
@@ -73,6 +87,14 @@ export const TemplatesResponseSchema = z.object({
   }),
 });
 
+// Template metrics response schema
+// One entry per alias in the generated query; a template the API declines to
+// report on comes back as null rather than as an error.
+export const TemplateMetricsResponseSchema = z.record(
+  z.string(),
+  TemplateMetricsSchema.nullable(),
+);
+
 // Workspace response schema (for fetching customer ID)
 export const WorkspaceResponseSchema = z.object({
   workspace: z.object({
@@ -85,6 +107,8 @@ export const WorkspaceResponseSchema = z.object({
 // Infer TypeScript types from schemas
 export type EarningDetails = z.infer<typeof EarningDetailsSchema>;
 export type Template = z.infer<typeof TemplateSchema>;
+export type TemplateMetrics = z.infer<typeof TemplateMetricsSchema>;
+export type TemplateMetricsResponse = z.infer<typeof TemplateMetricsResponseSchema>;
 export type GraphQLError = z.infer<typeof GraphQLErrorSchema>;
 export type EarningsResponse = z.infer<typeof EarningsResponseSchema>;
 export type TemplatesResponse = z.infer<typeof TemplatesResponseSchema>;
