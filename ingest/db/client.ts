@@ -255,11 +255,6 @@ export class GaugeDatabase {
 			.map((t) => {
 				const m = metrics.get(t.id)!;
 
-				// Health is the share of deploys that succeeded, so the rest failed.
-				const failedDeployments = Math.round(
-					(m.totalDeployments * (100 - m.templateHealth)) / 100
-				);
-
 				return {
 					collected_at: collectedAt,
 					template_id: t.id,
@@ -269,12 +264,15 @@ export class GaugeDatabase {
 					deployments_last_90d: m.deploymentsLast90Days,
 					active_deployments: m.activeDeployments,
 					template_health: m.templateHealth,
+					// templateMetrics reports 100 when it has no data; the public
+					// health field is null in that case, so it is what tells the two
+					// apart.
+					health_reported: t.health !== null && t.health !== undefined,
 					support_health: m.supportHealth,
 					total_earnings: m.totalEarnings,
 					earnings_last_30d: m.earningsLast30Days,
 					earnings_last_90d: m.earningsLast90Days,
 					eligible_for_support_bonus: m.eligibleForSupportBonus,
-					failed_deployments: failedDeployments,
 				};
 			});
 

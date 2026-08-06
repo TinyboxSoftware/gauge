@@ -103,8 +103,14 @@ CREATE TABLE IF NOT EXISTS template_deployment_snapshots (
     deployments_last_90d INTEGER NOT NULL,
     active_deployments INTEGER NOT NULL,
 
-    -- Health percentages over Railway's rolling window
+    -- Health percentages over Railway's rolling window.
+    -- templateMetrics reports 100 when it has nothing to report, which is
+    -- indistinguishable from a genuine 100. health_reported carries whether
+    -- workspaceTemplates returned a health for the same template in the same
+    -- run: it is NULL there when there is no data, so false here means
+    -- template_health is a default and not a measurement.
     template_health NUMERIC(5,2),
+    health_reported BOOLEAN NOT NULL DEFAULT false,
     support_health NUMERIC(5,2),
 
     -- Earnings, in dollars: templateMetrics reports dollars where
@@ -113,10 +119,6 @@ CREATE TABLE IF NOT EXISTS template_deployment_snapshots (
     earnings_last_30d NUMERIC(12,2),
     earnings_last_90d NUMERIC(12,2),
     eligible_for_support_bonus BOOLEAN,
-
-    -- Failed deploys implied by health, stored so the count is queryable
-    -- directly instead of being re-derived in every query
-    failed_deployments INTEGER,
 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
@@ -229,32 +231,44 @@ LEFT JOIN previous p ON l.template_id = p.template_id
 WHERE l.health < 70
    OR l.active_projects < COALESCE(p.prev_active_projects, l.active_projects);
 
--- View: template_deployment_failures
--- Deploys and failures added between consecutive snapshots of a template.
--- health alone cannot answer "how many deploys failed since yesterday": it is a
--- percentage over a rolling window, so it recovers as old failures age out. The
--- deltas here do answer it.
-CREATE OR REPLACE VIEW template_deployment_failures AS
+-- View: template_deployment_activity
+-- What changed for a template between consecutive snapshots.
+--
+-- Deliberately does not report a failure count. Railway exposes deploys as a
+-- lifetime counter and success as a percentage over a rolling window, and the
+-- window's size is not published - so the two cannot be multiplied into a
+-- number of failed deploys. Doing that produces nonsense as soon as the window
+-- empties: a template whose six deploys aged out went from "6 failed" to
+-- "0 failed" with no deploy in between, i.e. minus six failures in a day.
+--
+-- What is sound: deployments_added (the counter is monotonic, so the difference
+-- is real) and health_change alongside it. A drop in health against a positive
+-- deployments_added is the signal worth looking at.
+CREATE OR REPLACE VIEW template_deployment_activity AS
 SELECT
     curr.collected_at,
     curr.template_id,
     curr.template_name,
-    curr.template_health,
     curr.total_deployments,
-    curr.failed_deployments,
+    curr.active_deployments,
+    -- NULL rather than a number when Railway reported no health this run
+    CASE WHEN curr.health_reported THEN curr.template_health END AS template_health,
     curr.total_deployments - prev.total_deployments AS deployments_added,
-    curr.failed_deployments - prev.failed_deployments AS failures_added,
+    CASE
+        WHEN curr.health_reported AND prev.health_reported
+        THEN curr.template_health - prev.template_health
+    END AS health_change,
     prev.collected_at AS compared_to
 FROM template_deployment_snapshots curr
 LEFT JOIN LATERAL (
-    SELECT total_deployments, failed_deployments, collected_at
+    SELECT total_deployments, template_health, health_reported, collected_at
     FROM template_deployment_snapshots prev
     WHERE prev.template_id = curr.template_id
       AND prev.collected_at < curr.collected_at
     ORDER BY prev.collected_at DESC
     LIMIT 1
 ) prev ON true
-ORDER BY curr.collected_at DESC, failures_added DESC NULLS LAST;
+ORDER BY curr.collected_at DESC, deployments_added DESC NULLS LAST;
 
 -- Function: calculate_profitability_score
 -- Calculates a composite profitability score for a template
@@ -299,7 +313,8 @@ COMMENT ON TABLE template_snapshots IS 'Stores individual template performance m
 COMMENT ON TABLE template_metrics_derived IS 'Stores calculated metrics derived from comparing snapshots over time';
 COMMENT ON TABLE template_deployment_snapshots IS 'Stores per-template deploy counters and health from the creator-private templateMetrics query';
 COMMENT ON COLUMN template_deployment_snapshots.total_deployments IS 'Deploys of this template, including redeploys of an existing install - not the same population as template_snapshots.projects';
-COMMENT ON COLUMN template_deployment_snapshots.failed_deployments IS 'Deploys implied to have failed by health: total_deployments * (100 - template_health) / 100, rounded';
+COMMENT ON COLUMN template_deployment_snapshots.template_health IS 'Percentage of deploys that succeeded over Railway rolling window; 100 is also what the API returns when it has no data, so read it together with health_reported';
+COMMENT ON COLUMN template_deployment_snapshots.health_reported IS 'False when workspaceTemplates returned no health for this template in the same run, meaning template_health is a default rather than a measurement';
 COMMENT ON COLUMN template_snapshots.retention_rate IS 'Percentage of total projects that are still active (active/total * 100)';
 COMMENT ON COLUMN template_snapshots.revenue_per_active IS 'Average revenue per active project (total_payout / active_projects)';
 COMMENT ON COLUMN template_snapshots.growth_momentum IS 'Recent projects as percentage of active projects (recent/active * 100)';

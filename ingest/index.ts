@@ -88,11 +88,14 @@ async function collectMetrics() {
 		);
 		const totalDeployments = [...deploymentMetrics.values()]
 			.reduce((sum, m) => sum + m.totalDeployments, 0);
-		const failedDeployments = [...deploymentMetrics.values()]
-			.reduce((sum, m) => sum + Math.round((m.totalDeployments * (100 - m.templateHealth)) / 100), 0);
+		// Counted off the public health field: templateMetrics answers 100 when it
+		// has nothing to report, so it cannot be used to tell measured from missing.
+		const withHealth = templates.filter(
+			(t) => deploymentMetrics.has(t.id) && t.health !== null && t.health !== undefined,
+		).length;
 
 		logger.info(
-			{ count: deploymentMetrics.size, totalDeployments, failedDeployments },
+			{ count: deploymentMetrics.size, totalDeployments, withReportedHealth: withHealth },
 			'Deployment metrics fetched',
 		);
 
@@ -119,7 +122,7 @@ async function collectMetrics() {
 			templatesProcessed: templates.length,
 			templateRevenue: `$${(totalRevenue / 100).toFixed(2)}`,
 			deploymentsTracked: totalDeployments,
-			deploymentsFailed: failedDeployments,
+			templatesWithReportedHealth: withHealth,
 		}, 'METRICS COLLECTION COMPLETED SUCCESSFULLY');
 
 	} catch (error) {

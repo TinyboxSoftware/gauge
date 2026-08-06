@@ -69,12 +69,12 @@ export const TemplateDeploymentSnapshotSchema = z.object({
   deployments_last_90d: z.number(),
   active_deployments: z.number(),
   template_health: z.number().nullable(),
+  health_reported: z.boolean(),
   support_health: z.number().nullable(),
   total_earnings: z.number().nullable(),
   earnings_last_30d: z.number().nullable(),
   earnings_last_90d: z.number().nullable(),
   eligible_for_support_bonus: z.boolean().nullable(),
-  failed_deployments: z.number().nullable(),
   created_at: z.date(),
 });
 
