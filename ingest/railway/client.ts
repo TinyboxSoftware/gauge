@@ -8,13 +8,22 @@
 import type { Logger } from 'pino';
 import {
   EarningsResponseSchema,
+  TemplateMetricsResponseSchema,
   TemplatesResponseSchema,
   WorkspaceResponseSchema,
   type EarningDetails,
   type Template,
+  type TemplateMetrics,
 } from './types';
 import { EARNINGS_QUERY, EARNINGS_OPERATION } from './queries/earnings';
 import { TEMPLATES_QUERY, TEMPLATES_OPERATION } from './queries/templates';
+import {
+  buildTemplateMetricsQuery,
+  buildTemplateMetricsVariables,
+  metricsAlias,
+  TEMPLATE_METRICS_BATCH_SIZE,
+  TEMPLATE_METRICS_OPERATION,
+} from './queries/template-metrics';
 import { WORKSPACE_QUERY, WORKSPACE_OPERATION } from './queries/workspace';
 
 export interface RailwayClientConfig {
@@ -199,6 +208,55 @@ export class RailwayClient {
     this.logger?.info({ count: templates.length }, 'Successfully fetched templates');
 
     return templates;
+  }
+
+  /**
+   * Fetch deployment metrics for the given templates
+   *
+   * Returns deploy counts and the health percentage they imply, keyed by
+   * template id. Templates the API reports nothing for are simply absent from
+   * the map, so a missing entry is not an error.
+   */
+  async getTemplateMetrics(templateIds: string[]): Promise<Map<string, TemplateMetrics>> {
+    if (templateIds.length === 0) {
+      this.logger?.warn('No template ids given, skipping deployment metrics');
+      return new Map();
+    }
+
+    this.logger?.info({ count: templateIds.length }, 'Fetching template deployment metrics from Railway');
+
+    const metrics = new Map<string, TemplateMetrics>();
+
+    // Batched because Railway caps query breadth; see TEMPLATE_METRICS_BATCH_SIZE.
+    for (let offset = 0; offset < templateIds.length; offset += TEMPLATE_METRICS_BATCH_SIZE) {
+      const batch = templateIds.slice(offset, offset + TEMPLATE_METRICS_BATCH_SIZE);
+
+      const response = await this.executeQuery(
+        buildTemplateMetricsQuery(batch),
+        buildTemplateMetricsVariables(batch),
+        TEMPLATE_METRICS_OPERATION,
+        (data) => TemplateMetricsResponseSchema.parse(data),
+      );
+
+      batch.forEach((id, index) => {
+        const node = response[metricsAlias(index)];
+        if (node) {
+          metrics.set(id, node);
+        }
+      });
+
+      this.logger?.debug(
+        { offset, batchSize: batch.length, collected: metrics.size },
+        'Fetched a batch of template deployment metrics',
+      );
+    }
+
+    this.logger?.info(
+      { requested: templateIds.length, returned: metrics.size },
+      'Successfully fetched template deployment metrics',
+    );
+
+    return metrics;
   }
 
   /**
